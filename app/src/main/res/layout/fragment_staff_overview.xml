@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/staff_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/executive_dashboard"
+            android:textAppearance="@style/TextAppearance.QueueApp.Headline"
+            android:textColor="@color/staff_primary" />
+
+        <TextView
+            android:id="@+id/tvStaffOverviewWelcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.QueueApp.Body" />
+
+        <TextView
+            android:id="@+id/kpiCustomers"
+            style="@style/Widget.QueueApp.StatCard.Staff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/kpiAvgWait"
+            style="@style/Widget.QueueApp.StatCard.Staff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/kpiCompletion"
+            style="@style/Widget.QueueApp.StatCard.Staff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/kpiSatisfaction"
+            style="@style/Widget.QueueApp.StatCard.Staff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/kpiRevenue"
+            style="@style/Widget.QueueApp.StatCard.Staff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/tvPeakHour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_stat_card_staff"
+            android:padding="14dp"
+            android:textAppearance="@style/TextAppearance.QueueApp.Title"
+            android:textColor="@color/staff_primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnResetDaily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/staff_primary"
+            android:text="@string/reset_daily_queue" />
+    </LinearLayout>
+</ScrollView>

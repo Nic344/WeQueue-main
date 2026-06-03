@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#1A1A1A</color>
+    <color name="queue_app_bar_background">#1F1F1F</color>
+    <color name="nav_divider">#2C2C2C</color>
+    <color name="surface">#2C2C2C</color>
+    <color name="accent">#3D2A1A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_hint">#888888</color>
+    <color name="divider">#3A3A3A</color>
+    <color name="nav_bar_background">#1F1F1F</color>
+    <color name="nav_inactive">#9E9E9E</color>
+    <color name="queue_empty_background">#1A1A1A</color>
+    <color name="empty_ticket_icon">#5D4037</color>
+    <color name="empty_subtitle">#9E9E9E</color>
+    <color name="profile_avatar_fill">#2C2C2C</color>
+    <color name="nav_pill_background">#33FF6B00</color>
+    <color name="food_placeholder_1">#3D3528</color>
+    <color name="food_placeholder_2">#2D3D30</color>
+    <color name="food_placeholder_3">#28353D</color>
+    <color name="food_placeholder_4">#3D2D32</color>
+    <color name="food_placeholder_5">#352D3D</color>
+</resources>

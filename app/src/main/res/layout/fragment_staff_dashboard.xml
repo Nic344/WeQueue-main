@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvStaffTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/staff_ops_title"
+                android:textAppearance="@style/TextAppearance.QueueApp.Headline"
+                android:textColor="@color/staff_primary" />
+
+            <TextView
+                android:id="@+id/tvStaffWelcome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="@style/TextAppearance.QueueApp.Body" />
+
+            <TextView
+                android:id="@+id/tvNowServing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_stat_card_staff"
+                android:padding="14dp"
+                android:textAppearance="@style/TextAppearance.QueueApp.Title"
+                android:textColor="@color/staff_primary" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:columnCount="2">
+
+                <TextView
+                    android:id="@+id/cardActiveQueue"
+                    style="@style/Widget.QueueApp.StatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp" />
+
+                <TextView
+                    android:id="@+id/cardCustomersToday"
+                    style="@style/Widget.QueueApp.StatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp" />
+
+                <TextView
+                    android:id="@+id/cardAvgWait"
+                    style="@style/Widget.QueueApp.StatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp" />
+
+                <TextView
+                    android:id="@+id/cardCompleted"
+                    style="@style/Widget.QueueApp.StatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp" />
+            </GridLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Quick Actions"
+                android:textAppearance="@style/TextAppearance.QueueApp.Title" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCallNext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/staff_primary"
+                android:text="@string/call_next" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSkipQueue"
+                style="@style/Widget.QueueApp.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/skip_queue" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCompleteService"
+                style="@style/Widget.QueueApp.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/complete_service" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefreshQueue"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/refresh_queue_staff" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/live_queue_preview"
+                android:textAppearance="@style/TextAppearance.QueueApp.Title" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvLiveQueue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

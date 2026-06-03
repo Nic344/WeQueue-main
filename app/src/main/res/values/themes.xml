@@ -1,0 +1,109 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.QueueApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="materialButtonStyle">@style/Widget.QueueApp.Button</item>
+        <item name="textInputStyle">@style/Widget.QueueApp.TextInputLayout</item>
+        <item name="materialSwitchStyle">@style/Widget.QueueApp.Switch</item>
+    </style>
+
+    <style name="Theme.QueueApp" parent="Base.Theme.QueueApp" />
+
+    <style name="Theme.QueueApp.Splash" parent="Theme.QueueApp">
+        <item name="android:windowBackground">@color/splash_cream</item>
+        <item name="android:statusBarColor">@color/splash_cream</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+
+    <style name="Widget.QueueApp.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">16dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Widget.QueueApp.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">16dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="Widget.QueueApp.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+    </style>
+
+    <style name="Widget.QueueApp.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="thumbTint">@color/switch_thumb_tint</item>
+        <item name="trackTint">@color/switch_track_tint</item>
+    </style>
+
+    <style name="Widget.QueueApp.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconSize">24dp</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.QueueApp.BottomNav.Label</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.QueueApp.BottomNav.Label</item>
+        <item name="itemPaddingTop">4dp</item>
+        <item name="itemPaddingBottom">4dp</item>
+    </style>
+
+    <style name="TextAppearance.QueueApp.BottomNav.Label" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="Widget.QueueApp.BottomNav.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/nav_pill_background</item>
+        <item name="marginHorizontal">16dp</item>
+    </style>
+
+    <style name="TextAppearance.QueueApp.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.QueueApp.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.QueueApp.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="Widget.QueueApp.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipCornerRadius">20dp</item>
+    </style>
+
+    <style name="Widget.QueueApp.StatCard" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_stat_card_staff</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.QueueApp.Body</item>
+        <item name="android:minHeight">72dp</item>
+    </style>
+
+    <style name="Widget.QueueApp.StatCard.Staff" parent="Widget.QueueApp.StatCard" />
+
+    <style name="ThemeOverlay.QueueApp.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.QueueApp.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.QueueApp.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+</resources>

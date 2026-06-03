@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/staff_surface"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/staff_leaderboard"
+        android:textAppearance="@style/TextAppearance.QueueApp.Headline"
+        android:textColor="@color/staff_primary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/employee_list"
+        android:textAppearance="@style/TextAppearance.QueueApp.Body" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvStaffPerformance"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1" />
+</LinearLayout>

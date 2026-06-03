@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+    <dimen name="card_radius">16dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="food_card_width">150dp</dimen>
+    <dimen name="food_card_height">180dp</dimen>
+    <dimen name="food_image_height">117dp</dimen>
+    <dimen name="food_thumb_size">60dp</dimen>
+    <dimen name="history_thumb_size">40dp</dimen>
+    <dimen name="queue_button_height">52dp</dimen>
+    <dimen name="queue_button_gap">12dp</dimen>
+    <dimen name="queue_ticket_card_height">260dp</dimen>
+    <dimen name="queue_app_bar_height">56dp</dimen>
+    <dimen name="bottom_nav_height">60dp</dimen>
+</resources>

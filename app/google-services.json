@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1053051469491",
+    "firebase_url": "https://wequeue-51939-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "wequeue-51939",
+    "storage_bucket": "wequeue-51939.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053051469491:android:6ff83cbeeb8e3293dabac6",
+        "android_client_info": {
+          "package_name": "com.example.queueapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAS-xK_T-Y3Lhgbsvx081ADSHBdPLw0fSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
