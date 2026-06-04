@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,22 +20,36 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.queueapp.MainActivity;
 import com.example.queueapp.R;
-import com.example.queueapp.data.AppSession;
-import com.example.queueapp.model.QueueTicket;
+import com.example.queueapp.api.ApiConfig;
+import com.example.queueapp.api.ApiErrorHelper;
+import com.example.queueapp.api.ApiService;
+import com.example.queueapp.api.model.ApiResponse;
+import com.example.queueapp.api.model.MyQueueResponse;
+import com.example.queueapp.api.model.QueueModel;
+import com.example.queueapp.api.model.TakeQueueRequest;
 import com.example.queueapp.util.SystemUiHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class QueueFragment extends Fragment {
 
-    private AppSession session;
+    private ApiService apiService;
     private View queueContent;
     private View emptyQueueState;
     private TextView tvTicketNumber;
     private TextView tvPosition;
     private TextView tvTicketWait;
     private SwipeRefreshLayout swipeRefresh;
+    private ProgressBar progressQueue;
+    private MaterialButton btnRefreshQueue;
+    private MaterialButton btnCancelQueue;
+    private MaterialButton btnTakeQueueEmpty;
+    private QueueModel activeQueue;
 
     @Nullable
     @Override
@@ -46,7 +61,7 @@ public class QueueFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        session = AppSession.getInstance();
+        apiService = ApiConfig.getApiService();
 
         queueContent = view.findViewById(R.id.queueContent);
         emptyQueueState = view.findViewById(R.id.emptyQueueState);
@@ -54,9 +69,10 @@ public class QueueFragment extends Fragment {
         tvPosition = view.findViewById(R.id.tvPosition);
         tvTicketWait = view.findViewById(R.id.tvTicketWait);
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
-        MaterialButton btnRefreshQueue = view.findViewById(R.id.btnRefreshQueue);
-        MaterialButton btnCancelQueue = view.findViewById(R.id.btnCancelQueue);
-        MaterialButton btnTakeQueueEmpty = view.findViewById(R.id.btnTakeQueueEmpty);
+        progressQueue = view.findViewById(R.id.progressQueue);
+        btnRefreshQueue = view.findViewById(R.id.btnRefreshQueue);
+        btnCancelQueue = view.findViewById(R.id.btnCancelQueue);
+        btnTakeQueueEmpty = view.findViewById(R.id.btnTakeQueueEmpty);
 
         View queueAppBar = view.findViewById(R.id.queueAppBar);
         int horizontalPadding = (int) TypedValue.applyDimension(
@@ -64,69 +80,136 @@ public class QueueFragment extends Fragment {
         SystemUiHelper.applyHeaderInsets(queueAppBar, horizontalPadding, 0);
 
         swipeRefresh.setColorSchemeResources(R.color.primary);
-        swipeRefresh.setOnRefreshListener(() -> {
-            if (session.hasActiveTicket()) {
-                session.refreshQueue();
-                refreshUi();
-                Snackbar.make(view, R.string.queue_refreshed, Snackbar.LENGTH_SHORT).show();
-            }
-            swipeRefresh.setRefreshing(false);
-        });
+        swipeRefresh.setOnRefreshListener(() -> loadMyQueue(false));
 
         btnRefreshQueue.setOnClickListener(v -> {
             v.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up));
-            session.refreshQueue();
-            refreshUi();
-            Snackbar.make(view, R.string.queue_refreshed, Snackbar.LENGTH_SHORT).show();
+            loadMyQueue(true);
         });
-
         btnCancelQueue.setOnClickListener(v -> showCancelQueueDialog(view));
-
         btnTakeQueueEmpty.setOnClickListener(v -> {
-            if (requireActivity() instanceof MainActivity) {
-                ((MainActivity) requireActivity()).navigateTo(MainActivity.NAV_HOME);
-            }
+            v.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up));
+            takeQueue();
         });
 
-        refreshUi();
-        updateStatusBarForQueueState();
+        loadMyQueue(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (!(requireActivity() instanceof MainActivity)) {
-            return;
-        }
         updateStatusBarForQueueState();
     }
 
-    private void updateStatusBarForQueueState() {
-        if (!(requireActivity() instanceof MainActivity)) {
-            return;
-        }
-        if (session != null && session.hasActiveTicket()) {
-            SystemUiHelper.setQueueScreenStatusBar(requireActivity());
-        } else {
-            SystemUiHelper.setQueueEmptyStatusBar(requireActivity());
-        }
+    private void loadMyQueue(boolean showLoading) {
+        setLoading(showLoading);
+        apiService.getMyQueue().enqueue(new Callback<ApiResponse<MyQueueResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<MyQueueResponse>> call,
+                                   Response<ApiResponse<MyQueueResponse>> response) {
+                if (!isAdded()) {
+                    return;
+                }
+                ApiResponse<MyQueueResponse> body = response.body();
+                if (response.isSuccessful() && body != null && body.getData() != null) {
+                    MyQueueResponse data = body.getData();
+                    activeQueue = data.isHasActiveQueue() ? data.getQueue() : null;
+                    refreshUi();
+                } else {
+                    showRetry(response, () -> loadMyQueue(true));
+                }
+                setLoading(false);
+                swipeRefresh.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<MyQueueResponse>> call, Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                showRetry(t, () -> loadMyQueue(true));
+                setLoading(false);
+                swipeRefresh.setRefreshing(false);
+            }
+        });
+    }
+
+    private void takeQueue() {
+        setLoading(true);
+        apiService.takeQueue(new TakeQueueRequest(null)).enqueue(new Callback<ApiResponse<QueueModel>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<QueueModel>> call, Response<ApiResponse<QueueModel>> response) {
+                if (!isAdded()) {
+                    return;
+                }
+                ApiResponse<QueueModel> body = response.body();
+                if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
+                    activeQueue = body.getData();
+                    refreshUi();
+                    Snackbar.make(requireView(),
+                            getString(R.string.queue_taken, activeQueue.getQueueNumber()),
+                            Snackbar.LENGTH_LONG).show();
+                } else {
+                    showRetry(response, this::retry);
+                }
+                setLoading(false);
+            }
+
+            private void retry() {
+                takeQueue();
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<QueueModel>> call, Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                showRetry(t, QueueFragment.this::takeQueue);
+                setLoading(false);
+            }
+        });
+    }
+
+    private void cancelQueue() {
+        setLoading(true);
+        apiService.cancelQueue().enqueue(new Callback<ApiResponse<QueueModel>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<QueueModel>> call, Response<ApiResponse<QueueModel>> response) {
+                if (!isAdded()) {
+                    return;
+                }
+                ApiResponse<QueueModel> body = response.body();
+                if (response.isSuccessful() && body != null && body.isSuccess()) {
+                    activeQueue = null;
+                    refreshUi();
+                    Snackbar.make(requireView(), R.string.queue_cancelled, Snackbar.LENGTH_SHORT).show();
+                } else {
+                    showRetry(response, QueueFragment.this::cancelQueue);
+                }
+                setLoading(false);
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<QueueModel>> call, Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                showRetry(t, QueueFragment.this::cancelQueue);
+                setLoading(false);
+            }
+        });
     }
 
     private void showCancelQueueDialog(View anchor) {
-        if (!session.hasActiveTicket()) {
+        if (activeQueue == null) {
             return;
         }
-        QueueTicket ticket = session.getActiveTicket();
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(
                 requireContext(), R.style.ThemeOverlay_QueueApp_AlertDialog)
                 .setTitle(R.string.cancel_queue_title)
-                .setMessage(getString(R.string.cancel_queue_message, ticket.getQueueNumber()))
+                .setMessage(getString(R.string.cancel_queue_message, activeQueue.getQueueNumber()))
                 .setNegativeButton(R.string.keep_queue, null)
-                .setPositiveButton(R.string.yes_cancel, (d, w) -> {
-                    session.cancelQueue();
-                    refreshUi();
-                    Snackbar.make(anchor, R.string.queue_cancelled, Snackbar.LENGTH_SHORT).show();
-                });
+                .setPositiveButton(R.string.yes_cancel, (d, w) -> cancelQueue());
 
         androidx.appcompat.app.AlertDialog dialog = builder.create();
         dialog.setOnShowListener(d -> {
@@ -149,21 +232,60 @@ public class QueueFragment extends Fragment {
     }
 
     public void refreshUi() {
-        if (session == null || queueContent == null) {
+        if (queueContent == null) {
             return;
         }
-        if (session.hasActiveTicket()) {
+        if (activeQueue != null) {
             queueContent.setVisibility(View.VISIBLE);
             emptyQueueState.setVisibility(View.GONE);
-            QueueTicket ticket = session.getActiveTicket();
-            tvTicketNumber.setText(ticket.getQueueNumber());
-            tvPosition.setText(getString(R.string.position_format, ticket.getPosition()));
-            tvTicketWait.setText(getString(R.string.minutes, ticket.getEstimatedMinutes()));
+            tvTicketNumber.setText(activeQueue.getQueueNumber());
+            tvPosition.setText(getString(R.string.position_format, activeQueue.getPosition()));
+            tvTicketWait.setText(getString(R.string.minutes, activeQueue.getEstimatedWait()));
             queueContent.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in));
         } else {
             queueContent.setVisibility(View.GONE);
             emptyQueueState.setVisibility(View.VISIBLE);
         }
         updateStatusBarForQueueState();
+    }
+
+    private void setLoading(boolean loading) {
+        if (progressQueue != null) {
+            progressQueue.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        if (btnRefreshQueue != null) {
+            btnRefreshQueue.setEnabled(!loading);
+        }
+        if (btnCancelQueue != null) {
+            btnCancelQueue.setEnabled(!loading);
+        }
+        if (btnTakeQueueEmpty != null) {
+            btnTakeQueueEmpty.setEnabled(!loading);
+        }
+    }
+
+    private void showRetry(Response<?> response, Runnable retry) {
+        Snackbar.make(requireView(),
+                        ApiErrorHelper.getMessage(response, getString(R.string.action_failed, "")),
+                        Snackbar.LENGTH_LONG)
+                .setAction(R.string.retry, v -> retry.run())
+                .show();
+    }
+
+    private void showRetry(Throwable t, Runnable retry) {
+        Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()), Snackbar.LENGTH_LONG)
+                .setAction(R.string.retry, v -> retry.run())
+                .show();
+    }
+
+    private void updateStatusBarForQueueState() {
+        if (!(getActivity() instanceof MainActivity)) {
+            return;
+        }
+        if (activeQueue != null) {
+            SystemUiHelper.setQueueScreenStatusBar(requireActivity());
+        } else {
+            SystemUiHelper.setQueueEmptyStatusBar(requireActivity());
+        }
     }
 }

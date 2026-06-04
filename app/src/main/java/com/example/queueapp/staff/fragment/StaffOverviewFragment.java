@@ -8,20 +8,35 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.queueapp.R;
-import com.example.queueapp.backend.BackendCallback;
-import com.example.queueapp.backend.queue.StaffOperationsRepository;
+import com.example.queueapp.api.ApiConfig;
+import com.example.queueapp.api.ApiService;
+import com.example.queueapp.api.model.ApiResponse;
+import com.example.queueapp.api.model.StaffQueueItem;
+import com.example.queueapp.api.model.StaffStatsResponse;
 import com.example.queueapp.data.AppSession;
-import com.example.queueapp.staff.model.StaffDashboardStats;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class StaffOverviewFragment extends Fragment {
 
-    private final StaffOperationsRepository repository = new StaffOperationsRepository();
+    private ApiService apiService;
+
+    private TextView kpiCustomers;
+    private TextView kpiAvgWait;
+    private TextView kpiCompletion;
+    private TextView kpiSatisfaction;
+    private TextView kpiRevenue;
+    private TextView tvPeakHour;
+    private TextView tvStaffOverviewWelcome;
 
     @Nullable
     @Override
@@ -34,64 +49,66 @@ public class StaffOverviewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         AppSession session = AppSession.getInstance();
+        apiService = ApiConfig.getApiService();
 
-        TextView tvStaffOverviewWelcome = view.findViewById(R.id.tvStaffOverviewWelcome);
-        TextView kpiCustomers = view.findViewById(R.id.kpiCustomers);
-        TextView kpiAvgWait = view.findViewById(R.id.kpiAvgWait);
-        TextView kpiCompletion = view.findViewById(R.id.kpiCompletion);
-        TextView kpiSatisfaction = view.findViewById(R.id.kpiSatisfaction);
-        TextView kpiRevenue = view.findViewById(R.id.kpiRevenue);
-        TextView tvPeakHour = view.findViewById(R.id.tvPeakHour);
+        tvStaffOverviewWelcome = view.findViewById(R.id.tvStaffOverviewWelcome);
+        kpiCustomers = view.findViewById(R.id.kpiCustomers);
+        kpiAvgWait = view.findViewById(R.id.kpiAvgWait);
+        kpiCompletion = view.findViewById(R.id.kpiCompletion);
+        kpiSatisfaction = view.findViewById(R.id.kpiSatisfaction);
+        kpiRevenue = view.findViewById(R.id.kpiRevenue);
+        tvPeakHour = view.findViewById(R.id.tvPeakHour);
         MaterialButton btnResetDaily = view.findViewById(R.id.btnResetDaily);
+        
+        // Hide unused/irrelevant mock metrics
+        kpiSatisfaction.setVisibility(View.GONE);
+        kpiRevenue.setVisibility(View.GONE);
+        btnResetDaily.setVisibility(View.GONE);
 
         tvStaffOverviewWelcome.setText(getString(R.string.staff_welcome, session.getUserName()));
 
-        repository.loadDashboardStats(new BackendCallback<StaffDashboardStats>() {
+        loadStats();
+    }
+
+    private void loadStats() {
+        apiService.getStaffStats().enqueue(new Callback<ApiResponse<StaffStatsResponse>>() {
             @Override
-            public void onSuccess(StaffDashboardStats stats) {
-                if (!isAdded()) {
-                    return;
+            public void onResponse(Call<ApiResponse<StaffStatsResponse>> call,
+                                   Response<ApiResponse<StaffStatsResponse>> response) {
+                if (!isAdded()) return;
+
+                ApiResponse<StaffStatsResponse> body = response.body();
+                if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
+                    StaffStatsResponse stats = body.getData();
+                    
+                    kpiCustomers.setText("Total Queues Today\n" + stats.getTotalQueues());
+                    kpiAvgWait.setText(getString(R.string.kpi_avg_wait) + "\n" + stats.getAverageServeTime() + " min");
+                    kpiCompletion.setText("Completed\n" + stats.getCompletedCount());
+                    
+                    StaffQueueItem serving = stats.getCurrentlyServing();
+                    if (serving != null) {
+                        tvStaffOverviewWelcome.setText(getString(R.string.staff_welcome, AppSession.getInstance().getUserName()) 
+                            + "\nNow Serving: " + serving.getQueueNumber());
+                    }
+                    
+                    if (stats.getPeakHour() != null) {
+                        tvPeakHour.setText(getString(R.string.peak_hour_indicator, stats.getPeakHour()));
+                    } else {
+                        tvPeakHour.setText("Peak Hour: -");
+                    }
+                } else {
+                    String msg = body != null && body.getMessage() != null ? body.getMessage() : "Failed to load stats";
+                    Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.retry, v -> loadStats()).show();
                 }
-                kpiCustomers.setText(getString(R.string.kpi_customers_today) + "\n" + stats.getCustomersToday());
-                kpiAvgWait.setText(getString(R.string.kpi_avg_wait) + "\n" + stats.getAverageWaitMinutes() + " min");
-                int completion = stats.getCustomersToday() > 0
-                        ? (stats.getCompletedOrders() * 100) / stats.getCustomersToday() : 0;
-                kpiCompletion.setText(getString(R.string.kpi_completion_rate) + "\n" + completion + "%");
-                kpiSatisfaction.setText(getString(R.string.kpi_satisfaction) + "\n4.7 / 5.0");
-                kpiRevenue.setText(getString(R.string.kpi_revenue) + "\nRp 12.4M");
-                tvPeakHour.setText(getString(R.string.peak_hour_indicator, "11:30 AM"));
             }
 
             @Override
-            public void onError(String message) {
-                if (isAdded()) {
-                    Snackbar.make(view, getString(R.string.action_failed, message), Snackbar.LENGTH_SHORT).show();
-                }
+            public void onFailure(Call<ApiResponse<StaffStatsResponse>> call, Throwable t) {
+                if (!isAdded()) return;
+                Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()), Snackbar.LENGTH_LONG)
+                        .setAction(R.string.retry, v -> loadStats()).show();
             }
         });
-
-        btnResetDaily.setOnClickListener(v ->
-                new AlertDialog.Builder(requireContext())
-                        .setTitle(R.string.reset_daily_queue)
-                        .setMessage(R.string.reset_daily_confirm)
-                        .setPositiveButton(R.string.yes, (d, w) ->
-                                repository.resetDailyQueue(new BackendCallback<Void>() {
-                                    @Override
-                                    public void onSuccess(Void result) {
-                                        if (isAdded()) {
-                                            Snackbar.make(view, R.string.reset_success, Snackbar.LENGTH_SHORT).show();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(String message) {
-                                        if (isAdded()) {
-                                            Snackbar.make(view, getString(R.string.action_failed, message),
-                                                    Snackbar.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                }))
-                        .setNegativeButton(R.string.no, null)
-                        .show());
     }
 }

@@ -60,4 +60,12 @@
             android:text="@string/empty_history_desc"
             android:textColor="@color/text_secondary" />
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressHistory"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="gone" />
 </FrameLayout>

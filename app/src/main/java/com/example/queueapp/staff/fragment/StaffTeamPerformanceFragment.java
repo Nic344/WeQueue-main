@@ -15,8 +15,7 @@ import com.example.queueapp.R;
 import com.example.queueapp.staff.adapter.StaffPerformanceAdapter;
 import com.example.queueapp.staff.model.StaffPerformanceItem;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
 
 public class StaffTeamPerformanceFragment extends Fragment {
 
@@ -35,12 +34,8 @@ public class StaffTeamPerformanceFragment extends Fragment {
         rvStaffPerformance.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvStaffPerformance.setAdapter(adapter);
 
-        List<StaffPerformanceItem> dummy = Arrays.asList(
-                new StaffPerformanceItem("Rina", 48, 6, 1),
-                new StaffPerformanceItem("Budi", 42, 7, 2),
-                new StaffPerformanceItem("Siti", 39, 6, 3),
-                new StaffPerformanceItem("Andi", 35, 8, 4)
-        );
-        adapter.setItems(dummy);
+        // TODO: connect to real API when ready
+        // Removed hardcoded names to avoid confusion.
+        adapter.setItems(new ArrayList<>());
     }
 }

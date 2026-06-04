@@ -9,10 +9,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.queueapp.R;
-import com.example.queueapp.model.QueueHistory;
+import com.example.queueapp.api.model.QueueHistoryListResponse;
 import com.example.queueapp.util.FoodImageHelper;
 
 import java.util.ArrayList;
@@ -20,12 +21,15 @@ import java.util.List;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
 
-    private final List<QueueHistory> items = new ArrayList<>();
+    private final List<QueueHistoryListResponse.QueueHistoryItem> items = new ArrayList<>();
 
-    public void setItems(List<QueueHistory> history) {
+    public void setItems(List<QueueHistoryListResponse.QueueHistoryItem> history) {
+        List<QueueHistoryListResponse.QueueHistoryItem> safeHistory =
+                history != null ? history : new ArrayList<>();
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new HistoryDiffCallback(items, safeHistory));
         items.clear();
-        items.addAll(history);
-        notifyDataSetChanged();
+        items.addAll(safeHistory);
+        diff.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -64,12 +68,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             historyFoodImage = itemView.findViewById(R.id.historyFoodImage);
         }
 
-        void bind(QueueHistory item, boolean isLast) {
+        void bind(QueueHistoryListResponse.QueueHistoryItem item, boolean isLast) {
             historyDate.setText(item.getDate());
             historyQueue.setText(item.getQueueNumber());
             historyFood.setText(item.getFoodName());
             timelineLine.setVisibility(isLast ? View.INVISIBLE : View.VISIBLE);
-            FoodImageHelper.loadHistoryThumbnail(itemView.getContext(), historyFoodImage, item.getFoodName());
+            FoodImageHelper.loadApiFoodImage(itemView.getContext(), historyFoodImage, null,
+                    item.getFoodImage(), item.getFoodName());
             applyStatus(item.getStatus());
         }
 
@@ -77,16 +82,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             int bgColor;
             int textColor;
             String label;
-            switch (status) {
-                case QueueHistory.STATUS_CANCELLED:
+            switch (status == null ? "" : status.toLowerCase()) {
+                case "cancelled":
                     bgColor = R.color.history_cancelled_bg;
                     textColor = R.color.history_cancelled_text;
                     label = itemView.getContext().getString(R.string.status_cancelled);
                     break;
-                case QueueHistory.STATUS_SERVING:
+                case "serving":
                     bgColor = R.color.history_serving_bg;
                     textColor = R.color.history_serving_text;
                     label = itemView.getContext().getString(R.string.status_serving);
+                    break;
+                case "waiting":
+                    bgColor = R.color.history_waiting_bg;
+                    textColor = R.color.history_waiting_text;
+                    label = itemView.getContext().getString(R.string.status_waiting);
                     break;
                 default:
                     bgColor = R.color.history_completed_bg;
@@ -101,6 +111,43 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             badgeBg.setCornerRadius(24f);
             badgeBg.setColor(ContextCompat.getColor(itemView.getContext(), bgColor));
             statusBadge.setBackground(badgeBg);
+        }
+    }
+
+    private static class HistoryDiffCallback extends DiffUtil.Callback {
+        private final List<QueueHistoryListResponse.QueueHistoryItem> oldItems;
+        private final List<QueueHistoryListResponse.QueueHistoryItem> newItems;
+
+        HistoryDiffCallback(List<QueueHistoryListResponse.QueueHistoryItem> oldItems,
+                            List<QueueHistoryListResponse.QueueHistoryItem> newItems) {
+            this.oldItems = oldItems;
+            this.newItems = newItems;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldItems.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newItems.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldItems.get(oldItemPosition).getId() == newItems.get(newItemPosition).getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            QueueHistoryListResponse.QueueHistoryItem oldItem = oldItems.get(oldItemPosition);
+            QueueHistoryListResponse.QueueHistoryItem newItem = newItems.get(newItemPosition);
+            return String.valueOf(oldItem.getQueueNumber()).equals(String.valueOf(newItem.getQueueNumber()))
+                    && String.valueOf(oldItem.getDate()).equals(String.valueOf(newItem.getDate()))
+                    && String.valueOf(oldItem.getFoodName()).equals(String.valueOf(newItem.getFoodName()))
+                    && String.valueOf(oldItem.getStatus()).equals(String.valueOf(newItem.getStatus()))
+                    && String.valueOf(oldItem.getFoodImage()).equals(String.valueOf(newItem.getFoodImage()));
         }
     }
 }

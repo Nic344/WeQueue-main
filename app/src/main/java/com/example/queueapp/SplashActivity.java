@@ -11,9 +11,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.queueapp.auth.RoleNavigation;
 import com.example.queueapp.data.AppSession;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.queueapp.data.SessionManager;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -37,18 +36,13 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void routeAfterSplash() {
-        AppSession session = AppSession.getInstance();
-        FirebaseUser user = session.getAuthRepository().getCurrentUser();
-        if (user != null) {
-            session.restoreFromFirebase(user, () -> runOnUiThread(() -> {
-                RoleNavigation.navigateToRoleHome(SplashActivity.this);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                finish();
-            }));
+        if (SessionManager.getInstance().isLoggedIn()) {
+            AppSession.getInstance().restoreFromSession();
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
         } else {
             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            finish();
         }
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
     }
 }

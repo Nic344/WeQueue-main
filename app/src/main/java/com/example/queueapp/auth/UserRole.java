@@ -4,6 +4,7 @@ public final class UserRole {
 
     public static final String CUSTOMER = "customer";
     public static final String STAFF = "staff";
+    public static final String ADMIN = "admin";
 
     private UserRole() {
     }
@@ -14,6 +15,8 @@ public final class UserRole {
         }
         switch (role.toLowerCase()) {
             case STAFF:
+            case ADMIN:
+                return role.toLowerCase();
             case "manager":
                 return STAFF;
             case CUSTOMER:

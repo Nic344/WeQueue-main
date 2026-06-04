@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Outline;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
@@ -12,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.queueapp.R;
+import com.example.queueapp.api.ApiConfig;
 import com.example.queueapp.model.FoodItem;
+import com.bumptech.glide.Glide;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +65,22 @@ public final class FoodImageHelper {
         imageView.setVisibility(View.VISIBLE);
     }
 
+    public static void loadApiFoodImage(@NonNull Context context, @NonNull ImageView imageView,
+                                        @Nullable View imageContainer, @Nullable String imageUrl,
+                                        @Nullable String foodName) {
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        if (imageContainer != null) {
+            imageContainer.setBackgroundResource(android.R.color.transparent);
+        }
+
+        Object source = resolveImageSource(imageUrl, foodName);
+        Glide.with(context)
+                .load(source)
+                .placeholder(R.drawable.ic_food_coffee)
+                .error(R.drawable.ic_food_coffee)
+                .into(imageView);
+    }
+
     @Nullable
     public static String assetNameForFood(@NonNull String foodName) {
         switch (foodName) {
@@ -83,6 +102,26 @@ public final class FoodImageHelper {
             default:
                 return null;
         }
+    }
+
+    private static Object resolveImageSource(@Nullable String imageUrl, @Nullable String foodName) {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            String value = imageUrl.trim();
+            if (value.startsWith("http://") || value.startsWith("https://")) {
+                return value;
+            }
+            if (value.startsWith("/")) {
+                return ApiConfig.BASE_URL.replace("/api/", "") + value.substring(1);
+            }
+            return ApiConfig.BASE_URL + value;
+        }
+        if (foodName != null && !foodName.trim().isEmpty()) {
+            String asset = assetNameForFood(foodName);
+            if (asset != null) {
+                return Uri.parse("file:///android_asset/" + ASSETS_DIR + asset);
+            }
+        }
+        return R.drawable.ic_food_coffee;
     }
 
     public static void applyRoundedCorners(@NonNull ImageView imageView, float radiusPx) {

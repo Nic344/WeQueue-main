@@ -3,7 +3,6 @@ package com.example.queueapp.staff.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,29 +10,49 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.queueapp.R;
-import com.example.queueapp.backend.FirestorePaths;
-import com.example.queueapp.staff.model.StaffQueueEntry;
+import com.example.queueapp.api.model.StaffQueueItem;
+import com.google.android.material.button.MaterialButton;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.ViewHolder> {
 
-    public interface OnQueueClickListener {
-        void onQueueClicked(StaffQueueEntry entry);
+    public interface OnQueueActionListener {
+        void onSkip(StaffQueueItem item);
+        void onCancel(StaffQueueItem item);
+        void onComplete(StaffQueueItem item);
+        void onItemClick(StaffQueueItem item);
     }
 
-    private final List<StaffQueueEntry> items = new ArrayList<>();
-    private final OnQueueClickListener listener;
+    private final List<StaffQueueItem> items = new ArrayList<>();
+    private final OnQueueActionListener listener;
+    private final boolean showActions;
 
-    public StaffQueueAdapter(OnQueueClickListener listener) {
+    public StaffQueueAdapter(OnQueueActionListener listener, boolean showActions) {
         this.listener = listener;
+        this.showActions = showActions;
     }
 
-    public void setItems(List<StaffQueueEntry> entries) {
+    public StaffQueueAdapter(OnQueueActionListener listener) {
+        this(listener, true);
+    }
+
+    public void setItems(List<StaffQueueItem> entries) {
         items.clear();
-        items.addAll(entries);
+        if (entries != null) {
+            items.addAll(entries);
+        }
         notifyDataSetChanged();
+    }
+
+    public List<StaffQueueItem> getItems() {
+        return new ArrayList<>(items);
     }
 
     @NonNull
@@ -59,7 +78,10 @@ public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.Vi
         private final TextView tvStatusBadge;
         private final TextView tvCustomerName;
         private final TextView tvWaitingTime;
-        private final LinearLayout tagContainer;
+        private final MaterialButton btnSkip;
+        private final MaterialButton btnCancel;
+        private final MaterialButton btnComplete;
+        private final View actionContainer;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -67,81 +89,138 @@ public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.Vi
             tvStatusBadge = itemView.findViewById(R.id.tvStatusBadge);
             tvCustomerName = itemView.findViewById(R.id.tvCustomerName);
             tvWaitingTime = itemView.findViewById(R.id.tvWaitingTime);
-            tagContainer = itemView.findViewById(R.id.tagContainer);
+            btnSkip = itemView.findViewById(R.id.btnSkipItem);
+            btnCancel = itemView.findViewById(R.id.btnCancelItem);
+            btnComplete = itemView.findViewById(R.id.btnCompleteItem);
+            actionContainer = itemView.findViewById(R.id.actionContainer);
         }
 
-        void bind(StaffQueueEntry entry) {
+        void bind(StaffQueueItem entry) {
             tvQueueNumber.setText(entry.getQueueNumber());
-            tvCustomerName.setText(entry.getCustomerName());
-            tvWaitingTime.setText(itemView.getContext().getString(
-                    R.string.waiting_time_format, entry.getWaitingMinutes()));
+            String customerInfo = entry.getCustomerName() != null ? entry.getCustomerName() : "";
+            if (entry.getFoodName() != null && !entry.getFoodName().isEmpty()) {
+                customerInfo += " • " + entry.getFoodName();
+            }
+            tvCustomerName.setText(customerInfo);
+
+            String timeText = formatTime(entry.getCreatedAt());
+            tvWaitingTime.setText(timeText);
+
             tvStatusBadge.setText(formatStatus(entry.getStatus()));
             applyStatusStyle(entry.getStatus());
 
-            tagContainer.removeAllViews();
-            if (entry.isVip()) {
-                tagContainer.addView(createTag(R.string.status_vip, R.color.status_vip_bg, R.color.status_vip_text));
-            }
-            if (entry.isPriority()) {
-                tagContainer.addView(createTag(R.string.status_priority, R.color.status_priority_bg, R.color.status_priority_text));
-            }
-
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onQueueClicked(entry);
+                    listener.onItemClick(entry);
                 }
+            });
+
+            if (!showActions || actionContainer == null) {
+                if (actionContainer != null) {
+                    actionContainer.setVisibility(View.GONE);
+                }
+                return;
+            }
+
+            String status = entry.getStatus() != null ? entry.getStatus() : "";
+            switch (status) {
+                case "waiting":
+                    actionContainer.setVisibility(View.VISIBLE);
+                    btnSkip.setVisibility(View.VISIBLE);
+                    btnCancel.setVisibility(View.VISIBLE);
+                    btnComplete.setVisibility(View.GONE);
+                    break;
+                case "serving":
+                    actionContainer.setVisibility(View.VISIBLE);
+                    btnSkip.setVisibility(View.GONE);
+                    btnCancel.setVisibility(View.VISIBLE);
+                    btnComplete.setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    actionContainer.setVisibility(View.GONE);
+                    break;
+            }
+
+            btnSkip.setOnClickListener(v -> {
+                if (listener != null) listener.onSkip(entry);
+            });
+            btnCancel.setOnClickListener(v -> {
+                if (listener != null) listener.onCancel(entry);
+            });
+            btnComplete.setOnClickListener(v -> {
+                if (listener != null) listener.onComplete(entry);
             });
         }
 
-        private TextView createTag(int labelRes, int bgColor, int textColor) {
-            TextView tag = new TextView(itemView.getContext());
-            tag.setText(labelRes);
-            tag.setTextSize(11f);
-            tag.setPadding(16, 8, 16, 8);
-            tag.setTextColor(ContextCompat.getColor(itemView.getContext(), textColor));
-            tag.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), bgColor));
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            params.setMarginEnd(8);
-            tag.setLayoutParams(params);
-            return tag;
-        }
-
         private void applyStatusStyle(String status) {
-            int bg = R.color.status_serving;
-            int text = R.color.status_serving_text;
-            if (FirestorePaths.STATUS_WAITING.equals(status)) {
-                bg = R.color.accent;
-                text = R.color.text_primary;
-            } else if (FirestorePaths.STATUS_CALLED.equals(status)) {
-                bg = R.color.status_called_bg;
-                text = R.color.status_called_text;
-            } else if (FirestorePaths.STATUS_COMPLETED.equals(status)) {
-                bg = R.color.status_completed;
-                text = R.color.status_completed_text;
-            } else if (FirestorePaths.STATUS_CANCELLED.equals(status)
-                    || FirestorePaths.STATUS_SKIPPED.equals(status)) {
-                bg = R.color.status_cancelled;
-                text = R.color.status_cancelled_text;
+            if (status == null) status = "";
+            int bg, text;
+            switch (status) {
+                case "waiting":
+                    bg = R.color.accent;
+                    text = R.color.text_primary;
+                    break;
+                case "serving":
+                    bg = R.color.status_serving;
+                    text = R.color.status_serving_text;
+                    break;
+                case "completed":
+                    bg = R.color.status_completed;
+                    text = R.color.status_completed_text;
+                    break;
+                case "cancelled":
+                    bg = R.color.status_cancelled;
+                    text = R.color.status_cancelled_text;
+                    break;
+                default:
+                    bg = R.color.accent;
+                    text = R.color.text_primary;
+                    break;
             }
             tvStatusBadge.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), bg));
             tvStatusBadge.setTextColor(ContextCompat.getColor(itemView.getContext(), text));
         }
 
         private String formatStatus(String status) {
-            if (FirestorePaths.STATUS_CALLED.equals(status)) {
-                return itemView.getContext().getString(R.string.status_called);
+            if (status == null) return "";
+            switch (status) {
+                case "waiting":
+                    return itemView.getContext().getString(R.string.status_waiting);
+                case "serving":
+                    return itemView.getContext().getString(R.string.status_serving);
+                case "completed":
+                    return itemView.getContext().getString(R.string.status_completed);
+                case "cancelled":
+                    return itemView.getContext().getString(R.string.status_cancelled);
+                default:
+                    return status;
             }
-            if (FirestorePaths.STATUS_WAITING.equals(status)) {
-                return itemView.getContext().getString(R.string.status_waiting);
+        }
+
+        private String formatTime(String createdAt) {
+            if (createdAt == null || createdAt.isEmpty()) return "";
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                Date date = sdf.parse(createdAt);
+                if (date != null) {
+                    long diffMs = System.currentTimeMillis() - date.getTime();
+                    long minutes = TimeUnit.MILLISECONDS.toMinutes(diffMs);
+                    if (minutes < 1) return "Just now";
+                    if (minutes < 60) return minutes + " min ago";
+                    long hours = TimeUnit.MILLISECONDS.toHours(diffMs);
+                    return hours + "h ago";
+                }
+            } catch (ParseException ignored) {
             }
-            if (FirestorePaths.STATUS_COMPLETED.equals(status)) {
-                return itemView.getContext().getString(R.string.status_completed);
+            // Fallback: show time portion
+            try {
+                SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                SimpleDateFormat out = new SimpleDateFormat("HH:mm", Locale.US);
+                Date d = in.parse(createdAt);
+                if (d != null) return out.format(d);
+            } catch (ParseException ignored) {
             }
-            if (FirestorePaths.STATUS_CANCELLED.equals(status)) {
-                return itemView.getContext().getString(R.string.status_cancelled);
-            }
-            return status;
+            return createdAt;
         }
     }
 }

@@ -35,10 +35,16 @@ public final class RoleManager {
     }
 
     public boolean isStaff() {
-        return UserRole.STAFF.equals(currentRole);
+        return UserRole.STAFF.equals(currentRole) || UserRole.ADMIN.equals(currentRole);
+    }
+
+    public boolean isAdmin() {
+        return UserRole.ADMIN.equals(currentRole);
     }
 
     public boolean hasRole(String role) {
-        return currentRole.equals(UserRole.normalize(role));
+        String normalizedRole = UserRole.normalize(role);
+        return currentRole.equals(normalizedRole)
+                || (UserRole.STAFF.equals(normalizedRole) && UserRole.ADMIN.equals(currentRole));
     }
 }

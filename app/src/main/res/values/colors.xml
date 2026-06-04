@@ -28,6 +28,8 @@
     <color name="history_cancelled_text">#C62828</color>
     <color name="history_serving_bg">#E3F2FD</color>
     <color name="history_serving_text">#1565C0</color>
+    <color name="history_waiting_bg">#FEF3C7</color>
+    <color name="history_waiting_text">#B45309</color>
     <color name="timeline_orange">#FF6B00</color>
     <color name="status_completed">#D1FAE5</color>
     <color name="status_completed_text">#065F46</color>

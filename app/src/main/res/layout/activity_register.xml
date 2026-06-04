@@ -131,6 +131,15 @@
                     android:text="@string/sign_up"
                     app:backgroundTint="@color/primary" />
 
+                <ProgressBar
+                    android:id="@+id/progressRegister"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:visibility="gone" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

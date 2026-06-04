@@ -78,6 +78,10 @@
     <string name="surprise_message">How about %1$s?</string>
     <string name="no_results">No matches found</string>
     <string name="no_results_desc">Try adjusting your filters</string>
+    <string name="no_search_results_desc">Try a different food name or keyword</string>
+    <string name="retry">Retry</string>
+    <string name="save">Save</string>
+    <string name="load_failed">Could not load %1$s</string>
 
     <!-- Favorites -->
     <string name="my_favorites">My Favorites</string>
@@ -104,6 +108,7 @@
     <string name="dark_mode_off">Dark mode disabled</string>
     <string name="about_message">WeQueue v1.0\nSkip the Queue, Enjoy Your Food\n\nUI prototype — mock data only.</string>
     <string name="edit_profile_message">Profile editing is a UI preview feature.</string>
+    <string name="profile_updated">Profile updated</string>
     <string name="notifications_message">Notification settings are UI preview only.</string>
 
     <!-- Nav -->
@@ -121,6 +126,9 @@
 
     <string name="price_format">Rp %1$,d</string>
     <string name="loading">Loading…</string>
+    <string name="login_failed">Login failed. Please check your credentials.</string>
+    <string name="register_failed">Registration failed. Please try again.</string>
+    <string name="network_error">Network error: %1$s</string>
 
     <!-- Staff -->
     <string name="staff_dashboard">Dashboard</string>

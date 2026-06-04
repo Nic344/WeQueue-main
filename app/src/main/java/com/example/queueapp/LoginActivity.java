@@ -5,17 +5,28 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.queueapp.api.ApiConfig;
+import com.example.queueapp.api.ApiErrorHelper;
+import com.example.queueapp.api.ApiService;
+import com.example.queueapp.api.model.ApiResponse;
+import com.example.queueapp.api.model.LoginRequest;
+import com.example.queueapp.api.model.LoginResponse;
 import com.example.queueapp.auth.RoleNavigation;
 import com.example.queueapp.data.AppSession;
+import com.example.queueapp.data.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.FirebaseUser;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -24,10 +35,19 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmail;
     private TextInputEditText etPassword;
     private MaterialButton btnLogin;
+    private ProgressBar progressLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (SessionManager.getInstance().isLoggedIn()) {
+            AppSession.getInstance().restoreFromSession();
+            RoleNavigation.navigateToRoleHome(this);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_login);
 
         tilEmail = findViewById(R.id.tilEmail);
@@ -35,10 +55,27 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        progressLogin = findViewById(R.id.progressLogin);
         TextView tvRegisterLink = findViewById(R.id.tvRegisterLink);
+        
+        MaterialButton btnQuickCustomer = findViewById(R.id.btnQuickCustomer);
+        MaterialButton btnQuickStaff = findViewById(R.id.btnQuickStaff);
+        MaterialButton btnQuickAdmin = findViewById(R.id.btnQuickAdmin);
 
-        etEmail.setText("devin@wequeue.app");
-        etPassword.setText("password123");
+        btnQuickCustomer.setOnClickListener(v -> {
+            etEmail.setText("customer@wequeue.com");
+            etPassword.setText("customer123");
+        });
+        
+        btnQuickStaff.setOnClickListener(v -> {
+            etEmail.setText("staff@wequeue.com");
+            etPassword.setText("staff123");
+        });
+        
+        btnQuickAdmin.setOnClickListener(v -> {
+            etEmail.setText("admin@wequeue.com");
+            etPassword.setText("admin123");
+        });
 
         btnLogin.setOnClickListener(v -> attemptLogin());
         tvRegisterLink.setOnClickListener(v ->
@@ -71,36 +108,51 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        btnLogin.setEnabled(false);
-        btnLogin.setText(R.string.loading);
+        setLoading(true);
 
-        AppSession session = AppSession.getInstance();
-        session.getAuthRepository().signIn(email, password, new com.example.queueapp.backend.BackendCallback<FirebaseUser>() {
+        ApiService api = ApiConfig.getApiService();
+        api.login(new LoginRequest(email, password)).enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
-            public void onSuccess(FirebaseUser user) {
-                String displayName = user.getDisplayName();
-                if (displayName == null || displayName.isEmpty()) {
-                    displayName = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+            public void onResponse(Call<ApiResponse<LoginResponse>> call,
+                                   Response<ApiResponse<LoginResponse>> response) {
+                setLoading(false);
+                if (!response.isSuccessful() || response.body() == null) {
+                    Toast.makeText(LoginActivity.this,
+                            ApiErrorHelper.getMessage(response, getString(R.string.login_failed)),
+                            Toast.LENGTH_LONG).show();
+                    return;
                 }
-                String finalDisplayName = displayName;
-                session.onLoginSuccess(user, finalDisplayName, () -> runOnUiThread(() -> {
-                    session.setLoggedIn(true);
-                    session.setUserEmail(email);
 
-                    Snackbar.make(findViewById(R.id.loginCard), R.string.login_success, Snackbar.LENGTH_SHORT).show();
-                    RoleNavigation.navigateToRoleHome(LoginActivity.this);
-                    finish();
-                }));
+                ApiResponse<LoginResponse> body = response.body();
+                if (!body.isSuccess() || body.getData() == null
+                        || body.getData().getToken() == null) {
+                    Toast.makeText(LoginActivity.this,
+                            body.getMessage() != null ? body.getMessage() : getString(R.string.login_failed),
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                LoginResponse data = body.getData();
+                SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
+                AppSession.getInstance().applyUser(data.getUser());
+
+                RoleNavigation.navigateToRoleHome(LoginActivity.this);
+                finish();
             }
 
             @Override
-            public void onError(String message) {
-                runOnUiThread(() -> {
-                    btnLogin.setEnabled(true);
-                    btnLogin.setText(R.string.login);
-                    tilPassword.setError(message);
-                });
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                setLoading(false);
+                Toast.makeText(LoginActivity.this,
+                        getString(R.string.network_error, t.getMessage()),
+                        Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void setLoading(boolean loading) {
+        progressLogin.setVisibility(loading ? View.VISIBLE : View.GONE);
+        btnLogin.setEnabled(!loading);
+        btnLogin.setText(loading ? R.string.loading : R.string.login);
     }
 }
