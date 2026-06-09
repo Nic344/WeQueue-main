@@ -32,6 +32,7 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
 
     public interface OnUserAdminClickListener {
         void onChangeRoleClick(UserModel user, String newRole);
+        void onDeleteUserClick(UserModel user);
     }
 
     public UserAdminAdapter(OnUserAdminClickListener listener) {
@@ -102,6 +103,7 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
         ShapeableImageView ivUserAvatar;
         TextView tvUserName, tvUserEmail, tvUserRole;
         ImageButton btnChangeRole;
+        ImageButton btnDeleteUser;
 
         UserViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -110,6 +112,7 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
             tvUserEmail = itemView.findViewById(R.id.tvUserEmail);
             tvUserRole = itemView.findViewById(R.id.tvUserRole);
             btnChangeRole = itemView.findViewById(R.id.btnChangeRole);
+            btnDeleteUser = itemView.findViewById(R.id.btnDeleteUser);
         }
 
         void bind(UserModel user) {
@@ -153,6 +156,12 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
                     return true;
                 });
                 popup.show();
+            });
+
+            btnDeleteUser.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDeleteUserClick(user);
+                }
             });
         }
     }

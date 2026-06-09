@@ -19,7 +19,7 @@ Food catalog remains local (MockDataProvider) for UI assets (drawables/colors).
 
 User roles (field "role" on users/{uid}):
 - customer  -> Customer app (MainActivity)
-- staff     -> Staff dashboard (StaffMainActivity) — operations, overview, reports, team
+- staff     -> Staff dashboard (StaffMainActivity) — dashboard, queue, profile
 
 Set role manually in Firestore Console for staff test accounts.
 New registrations default to role: customer.

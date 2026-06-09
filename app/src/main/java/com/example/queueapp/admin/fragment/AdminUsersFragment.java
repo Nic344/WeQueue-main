@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +20,7 @@ import com.example.queueapp.admin.adapter.UserAdminAdapter;
 import com.example.queueapp.api.ApiConfig;
 import com.example.queueapp.api.ApiService;
 import com.example.queueapp.api.model.ApiResponse;
+import com.example.queueapp.api.model.UserListResponse;
 import com.example.queueapp.api.model.UserModel;
 import com.example.queueapp.data.SessionManager;
 import com.google.gson.JsonObject;
@@ -80,14 +82,15 @@ public class AdminUsersFragment extends Fragment implements UserAdminAdapter.OnU
 
     private void loadUsers() {
         swipeRefreshAdminUsers.setRefreshing(true);
-        apiService.getAllUsers().enqueue(new Callback<ApiResponse<List<UserModel>>>() {
+        apiService.getAllUsers().enqueue(new Callback<ApiResponse<UserListResponse>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<UserModel>>> call, Response<ApiResponse<List<UserModel>>> response) {
+            public void onResponse(Call<ApiResponse<UserListResponse>> call, Response<ApiResponse<UserListResponse>> response) {
                 if (!isAdded()) return;
                 swipeRefreshAdminUsers.setRefreshing(false);
-                ApiResponse<List<UserModel>> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
-                    allUsers = body.getData();
+                ApiResponse<UserListResponse> body = response.body();
+                if (response.isSuccessful() && body != null && body.isSuccess()
+                        && body.getData() != null && body.getData().getUsers() != null) {
+                    allUsers = body.getData().getUsers();
                     adapter.setItems(allUsers);
                 } else {
                     Toast.makeText(requireContext(), "Failed to load users", Toast.LENGTH_SHORT).show();
@@ -95,7 +98,7 @@ public class AdminUsersFragment extends Fragment implements UserAdminAdapter.OnU
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<List<UserModel>>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<UserListResponse>> call, Throwable t) {
                 if (!isAdded()) return;
                 swipeRefreshAdminUsers.setRefreshing(false);
                 Toast.makeText(requireContext(), "Network error", Toast.LENGTH_SHORT).show();
@@ -130,6 +133,49 @@ public class AdminUsersFragment extends Fragment implements UserAdminAdapter.OnU
 
             @Override
             public void onFailure(Call<ApiResponse<UserModel>> call, Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Network error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onDeleteUserClick(UserModel user) {
+        if (user.getId() == SessionManager.getInstance().getUser().getId()) {
+            Toast.makeText(requireContext(), "Cannot delete your own account", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.admin_delete_user)
+                .setMessage(getString(R.string.admin_delete_user_confirm,
+                        user.getName() != null ? user.getName() : user.getEmail()))
+                .setPositiveButton(R.string.yes, (d, w) -> deleteUser(user))
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    private void deleteUser(UserModel user) {
+        JsonObject body = new JsonObject();
+        body.addProperty("user_id", user.getId());
+
+        apiService.deleteUser(body).enqueue(new Callback<ApiResponse<Object>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
+                if (!isAdded()) return;
+                ApiResponse<Object> responseBody = response.body();
+                if (response.isSuccessful() && responseBody != null && responseBody.isSuccess()) {
+                    Toast.makeText(requireContext(), "User deleted", Toast.LENGTH_SHORT).show();
+                    loadUsers();
+                } else {
+                    String msg = responseBody != null && responseBody.getMessage() != null
+                            ? responseBody.getMessage() : "Delete failed";
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
                 if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Network error", Toast.LENGTH_SHORT).show();
             }

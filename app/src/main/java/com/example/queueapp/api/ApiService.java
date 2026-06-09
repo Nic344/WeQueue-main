@@ -16,9 +16,9 @@ import com.example.queueapp.api.model.RegisterRequest;
 import com.example.queueapp.api.model.StaffAllQueuesResponse;
 import com.example.queueapp.api.model.StaffDashboardResponse;
 import com.example.queueapp.api.model.StaffQueueItem;
-import com.example.queueapp.api.model.StaffStatsResponse;
 import com.example.queueapp.api.model.TakeQueueRequest;
 import com.example.queueapp.api.model.UpdateProfileRequest;
+import com.example.queueapp.api.model.UserListResponse;
 
 import com.google.gson.JsonObject;
 
@@ -118,13 +118,13 @@ public interface ApiService {
             @Query("page") int page,
             @Query("limit") int limit);
 
-    @GET("staff/stats.php")
-    Call<ApiResponse<StaffStatsResponse>> getStaffStats();
-    
     // Admin
     @GET("admin/users.php")
-    Call<ApiResponse<java.util.List<com.example.queueapp.api.model.UserModel>>> getAllUsers();
+    Call<ApiResponse<UserListResponse>> getAllUsers();
     
     @PUT("admin/users/update-role.php")
     Call<ApiResponse<com.example.queueapp.api.model.UserModel>> updateUserRole(@Body JsonObject body);
+
+    @HTTP(method = "DELETE", path = "admin/users/delete.php", hasBody = true)
+    Call<ApiResponse<Object>> deleteUser(@Body JsonObject body);
 }

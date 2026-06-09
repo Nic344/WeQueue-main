@@ -21,4 +21,8 @@
     <color name="food_placeholder_3">#28353D</color>
     <color name="food_placeholder_4">#3D2D32</color>
     <color name="food_placeholder_5">#352D3D</color>
+
+    <!-- Staff (dark): only the surface needs a dark variant; staff_primary
+         stays the same so white text on filled buttons keeps its contrast. -->
+    <color name="staff_surface">#1A1A1A</color>
 </resources>

@@ -14,10 +14,8 @@ requireAuth($pdo);
 
 $stmt = $pdo->query(
     "SELECT f.id, f.name, f.description, f.price, f.image_url, f.category, f.created_at,
-            COUNT(q.id) AS queue_count
+            (SELECT COUNT(*) FROM queues q WHERE q.food_id = f.id) AS queue_count
      FROM foods f
-     LEFT JOIN queues q ON q.food_id = f.id
-     GROUP BY f.id
      ORDER BY queue_count DESC, f.name ASC
      LIMIT 6"
 );

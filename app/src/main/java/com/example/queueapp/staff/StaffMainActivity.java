@@ -8,12 +8,9 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.queueapp.R;
 import com.example.queueapp.auth.RoleProtectedActivity;
 import com.example.queueapp.auth.UserRole;
+import com.example.queueapp.fragment.ProfileFragment;
 import com.example.queueapp.staff.fragment.StaffDashboardFragment;
-import com.example.queueapp.staff.fragment.StaffOverviewFragment;
-import com.example.queueapp.staff.fragment.StaffProfileFragment;
 import com.example.queueapp.staff.fragment.StaffQueueFragment;
-import com.example.queueapp.staff.fragment.StaffReportsFragment;
-import com.example.queueapp.staff.fragment.StaffTeamPerformanceFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class StaffMainActivity extends RoleProtectedActivity {
@@ -46,14 +43,8 @@ public class StaffMainActivity extends RoleProtectedActivity {
         Fragment fragment;
         if (menuItemId == R.id.staff_nav_queue) {
             fragment = new StaffQueueFragment();
-        } else if (menuItemId == R.id.staff_nav_overview) {
-            fragment = new StaffOverviewFragment();
-        } else if (menuItemId == R.id.staff_nav_reports) {
-            fragment = new StaffReportsFragment();
-        } else if (menuItemId == R.id.staff_nav_team) {
-            fragment = new StaffTeamPerformanceFragment();
         } else if (menuItemId == R.id.staff_nav_profile) {
-            fragment = new StaffProfileFragment();
+            fragment = new ProfileFragment();
         } else {
             fragment = new StaffDashboardFragment();
         }

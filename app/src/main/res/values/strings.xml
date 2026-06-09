@@ -133,9 +133,6 @@
     <!-- Staff -->
     <string name="staff_dashboard">Dashboard</string>
     <string name="staff_queue">Queue</string>
-    <string name="staff_overview">Overview</string>
-    <string name="staff_reports">Reports</string>
-    <string name="staff_team_performance">Team</string>
     <string name="staff_profile">Profile</string>
     <string name="staff_ops_title">Operations Center</string>
     <string name="staff_welcome">Welcome, %1$s</string>
@@ -153,39 +150,23 @@
     <string name="call_customer">Call Customer</string>
     <string name="complete_queue">Complete Queue</string>
     <string name="cancel_queue_staff">Cancel Queue</string>
+    <string name="staff_btn_complete">Complete</string>
+    <string name="staff_btn_cancel">Cancel</string>
     <string name="queue_detail">Queue Detail</string>
     <string name="waiting_time_format">%1$d min wait</string>
     <string name="status_called">Called</string>
     <string name="status_vip">VIP</string>
     <string name="status_priority">Priority</string>
-    <string name="staff_analytics_title">Service Analytics</string>
-    <string name="peak_hours">Peak Hours</string>
-    <string name="queue_trends">Queue Trends</string>
-    <string name="service_performance">Service Performance</string>
     <string name="staff_logout">Staff Logout</string>
+
+    <!-- Admin -->
+    <string name="admin_profile">Profile</string>
+    <string name="admin_change_role">Change role</string>
+    <string name="admin_delete_user">Delete User</string>
+    <string name="admin_delete_user_confirm">Delete \"%1$s\"? This action cannot be undone.</string>
     <string name="staff_role_label">Role: Staff</string>
     <string name="action_success">Action completed</string>
     <string name="action_failed">Action failed: %1$s</string>
 
-    <string name="executive_dashboard">Executive Dashboard</string>
-    <string name="kpi_customers_today">Today\'s Customers</string>
-    <string name="kpi_avg_wait">Average Waiting Time</string>
-    <string name="kpi_completion_rate">Queue Completion Rate</string>
-    <string name="kpi_satisfaction">Customer Satisfaction</string>
-    <string name="kpi_revenue">Revenue (Est.)</string>
-    <string name="peak_hour_indicator">Peak Hour: %1$s</string>
-    <string name="daily_reports">Daily Reports</string>
-    <string name="weekly_reports">Weekly Reports</string>
-    <string name="monthly_reports">Monthly Reports</string>
-    <string name="queue_statistics">Queue Statistics</string>
-    <string name="service_statistics">Service Statistics</string>
-    <string name="export_report">Export Report</string>
-    <string name="staff_leaderboard">Staff Leaderboard</string>
-    <string name="employee_list">Employee List</string>
-    <string name="completed_queues">Completed Queues</string>
-    <string name="avg_service_time">Avg. Service Time</string>
-    <string name="performance_ranking">Performance Ranking</string>
-    <string name="reset_daily_queue">Reset Daily Queue</string>
-    <string name="reset_daily_confirm">Reset queue counter for a new business day?</string>
     <string name="reset_success">Queue reset for new day</string>
 </resources>

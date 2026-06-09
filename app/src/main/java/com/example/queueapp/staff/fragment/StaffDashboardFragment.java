@@ -37,6 +37,8 @@ import retrofit2.Response;
 public class StaffDashboardFragment extends Fragment {
 
     private static final long AUTO_REFRESH_INTERVAL = 30_000L;
+    private static final int MAX_RETRIES = 2;
+    private static final long RETRY_DELAY_MS = 1_200L;
 
     private ApiService apiService;
     private StaffQueueAdapter adapter;
@@ -115,34 +117,53 @@ public class StaffDashboardFragment extends Fragment {
     }
 
     private void loadDashboard() {
+        loadDashboard(0);
+    }
+
+    private void loadDashboard(final int attempt) {
         apiService.getStaffDashboard().enqueue(new Callback<ApiResponse<StaffDashboardResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<StaffDashboardResponse>> call,
                                    Response<ApiResponse<StaffDashboardResponse>> response) {
                 if (!isAdded()) return;
-                swipeRefresh.setRefreshing(false);
 
                 ApiResponse<StaffDashboardResponse> body = response.body();
                 if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
+                    swipeRefresh.setRefreshing(false);
                     StaffDashboardResponse data = body.getData();
                     populateDashboard(data);
                 } else {
                     String msg = body != null && body.getMessage() != null
                             ? body.getMessage() : "Failed to load dashboard";
-                    Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG)
-                            .setAction(R.string.retry, v -> loadDashboard()).show();
+                    handleLoadFailure(attempt, msg);
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<StaffDashboardResponse>> call, Throwable t) {
                 if (!isAdded()) return;
-                swipeRefresh.setRefreshing(false);
-                Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                                Snackbar.LENGTH_LONG)
-                        .setAction(R.string.retry, v -> loadDashboard()).show();
+                handleLoadFailure(attempt, getString(R.string.network_error, t.getMessage()));
             }
         });
+    }
+
+    private void handleLoadFailure(int attempt, String message) {
+        if (!isAdded()) return;
+
+        // Transient failures (cold start / token timing) are common on the first
+        // load. Retry silently a couple of times before surfacing the error.
+        if (attempt < MAX_RETRIES) {
+            autoRefreshHandler.postDelayed(() -> {
+                if (isAdded()) {
+                    loadDashboard(attempt + 1);
+                }
+            }, RETRY_DELAY_MS);
+            return;
+        }
+
+        swipeRefresh.setRefreshing(false);
+        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG)
+                .setAction(R.string.retry, v -> loadDashboard()).show();
     }
 
     private void populateDashboard(StaffDashboardResponse data) {

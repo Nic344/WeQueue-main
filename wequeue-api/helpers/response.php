@@ -2,6 +2,38 @@
 
 declare(strict_types=1);
 
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+if (!function_exists('initApiResponse')) {
+    function initApiResponse(): void
+    {
+        static $initialized = false;
+        if ($initialized) {
+            return;
+        }
+        $initialized = true;
+
+        if (ob_get_level() === 0) {
+            ob_start();
+        }
+
+        set_exception_handler(static function (Throwable $e): void {
+            jsonError('Server error: ' . $e->getMessage(), 500);
+        });
+
+        register_shutdown_function(static function (): void {
+            $error = error_get_last();
+            if ($error === null || !in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+                return;
+            }
+            jsonError('Server error: ' . $error['message'], 500);
+        });
+    }
+}
+
+initApiResponse();
+
 function sendCorsHeaders(): void
 {
     header('Access-Control-Allow-Origin: *');
@@ -17,6 +49,9 @@ function sendCorsHeaders(): void
 
 function jsonSuccess(mixed $data = null, string $message = 'OK', int $code = 200): void
 {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
     sendCorsHeaders();
     http_response_code($code);
     echo json_encode([
@@ -29,6 +64,9 @@ function jsonSuccess(mixed $data = null, string $message = 'OK', int $code = 200
 
 function jsonError(string $message, int $code = 400, mixed $data = null): void
 {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
     sendCorsHeaders();
     http_response_code($code);
     echo json_encode([

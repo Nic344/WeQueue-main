@@ -2,7 +2,10 @@ package com.example.queueapp.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -11,14 +14,25 @@ import com.example.queueapp.LoginActivity;
 import com.example.queueapp.R;
 import com.example.queueapp.admin.fragment.AdminFoodsFragment;
 import com.example.queueapp.admin.fragment.AdminUsersFragment;
+import com.example.queueapp.api.ApiConfig;
+import com.example.queueapp.api.ApiService;
+import com.example.queueapp.api.model.ApiResponse;
+import com.example.queueapp.auth.RoleNavigation;
+import com.example.queueapp.data.AppSession;
 import com.example.queueapp.data.SessionManager;
+import com.example.queueapp.fragment.ProfileFragment;
 import com.example.queueapp.staff.fragment.StaffDashboardFragment;
 import com.example.queueapp.staff.fragment.StaffQueueFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class AdminMainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +48,8 @@ public class AdminMainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_admin_main);
-        
+
+        apiService = ApiConfig.getApiService();
         toolbar = findViewById(R.id.adminToolbar);
         setSupportActionBar(toolbar);
         
@@ -57,6 +72,9 @@ public class AdminMainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_users) {
                 selectedFragment = new AdminUsersFragment();
                 title = "Manage Users";
+            } else if (id == R.id.nav_profile) {
+                selectedFragment = new ProfileFragment();
+                title = "Profile";
             }
             
             if (selectedFragment != null) {
@@ -75,5 +93,49 @@ public class AdminMainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_dashboard);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_admin_toolbar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_logout) {
+            confirmLogout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.logout)
+                .setMessage(R.string.logout_confirm)
+                .setPositiveButton(R.string.yes, (d, w) -> performLogout())
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    private void performLogout() {
+        apiService.logout().enqueue(new Callback<ApiResponse<Object>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
+                finishLogout();
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
+                finishLogout();
+            }
+        });
+    }
+
+    private void finishLogout() {
+        AppSession.getInstance().resetSession();
+        RoleNavigation.navigateToLogin(this);
+        finish();
     }
 }
