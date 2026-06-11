@@ -11,23 +11,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiErrorHelper;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.api.model.LoginResponse;
-import com.example.queueapp.api.model.RegisterRequest;
 import com.example.queueapp.auth.RoleNavigation;
 import com.example.queueapp.data.AppSession;
 import com.example.queueapp.data.SessionManager;
+import com.example.queueapp.viewmodel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -37,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputLayout tilConfirmPassword;
     private MaterialButton btnRegister;
     private ProgressBar progressRegister;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +52,30 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
         tvLoginLink.setOnClickListener(v -> finish());
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel.getAuthResult().observe(this, resource -> {
+            if (resource == null) {
+                return;
+            }
+            if (resource.isLoading()) {
+                setLoading(true);
+                return;
+            }
+            setLoading(false);
+            if (resource.isSuccess() && resource.data != null && resource.data.getToken() != null) {
+                LoginResponse data = resource.data;
+                SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
+                AppSession.getInstance().applyUser(data.getUser());
+                Toast.makeText(RegisterActivity.this, R.string.register_success, Toast.LENGTH_SHORT).show();
+                RoleNavigation.navigateToRoleHome(RegisterActivity.this);
+                finish();
+            } else {
+                String msg = resource.message != null ? resource.message : getString(R.string.register_failed);
+                tilEmail.setError(msg);
+                Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
 
         btnRegister.setOnClickListener(v -> {
             clearErrors();
@@ -87,52 +105,7 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            setLoading(true);
-
-            ApiService api = ApiConfig.getApiService();
-            api.register(new RegisterRequest(name, email, password))
-                    .enqueue(new Callback<ApiResponse<LoginResponse>>() {
-                        @Override
-                        public void onResponse(Call<ApiResponse<LoginResponse>> call,
-                                               Response<ApiResponse<LoginResponse>> response) {
-                            setLoading(false);
-                            if (!response.isSuccessful() || response.body() == null) {
-                                String msg = ApiErrorHelper.getMessage(response,
-                                        getString(R.string.register_failed));
-                                tilEmail.setError(msg);
-                                Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
-                                return;
-                            }
-
-                            ApiResponse<LoginResponse> body = response.body();
-                            if (!body.isSuccess() || body.getData() == null
-                                    || body.getData().getToken() == null) {
-                                String msg = body.getMessage() != null
-                                        ? body.getMessage()
-                                        : getString(R.string.register_failed);
-                                tilEmail.setError(msg);
-                                Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
-                                return;
-                            }
-
-                            LoginResponse data = body.getData();
-                            SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
-                            AppSession.getInstance().applyUser(data.getUser());
-
-                            Toast.makeText(RegisterActivity.this,
-                                    R.string.register_success, Toast.LENGTH_SHORT).show();
-                            RoleNavigation.navigateToRoleHome(RegisterActivity.this);
-                            finish();
-                        }
-
-                        @Override
-                        public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
-                            setLoading(false);
-                            Toast.makeText(RegisterActivity.this,
-                                    getString(R.string.network_error, t.getMessage()),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    });
+            authViewModel.register(name, email, password);
         });
     }
 

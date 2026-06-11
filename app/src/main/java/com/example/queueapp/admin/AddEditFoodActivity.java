@@ -13,16 +13,13 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.queueapp.R;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiErrorHelper;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.api.model.FoodModel;
-import com.example.queueapp.api.model.UploadResponse;
 import com.example.queueapp.util.ImageUploadHelper;
+import com.example.queueapp.viewmodel.AddEditFoodViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -30,9 +27,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.io.IOException;
 
 import okhttp3.MultipartBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class AddEditFoodActivity extends AppCompatActivity {
 
@@ -41,7 +35,8 @@ public class AddEditFoodActivity extends AppCompatActivity {
     private ImageView ivFoodPreview;
     private View imagePlaceholder;
     private MaterialButton btnPickFoodImage;
-    private ApiService apiService;
+    private MaterialButton btnSaveFood;
+    private AddEditFoodViewModel viewModel;
 
     private int foodId = -1;
     private boolean isEditMode = false;
@@ -59,7 +54,7 @@ public class AddEditFoodActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_edit_food);
 
-        apiService = ApiConfig.getApiService();
+        viewModel = new ViewModelProvider(this).get(AddEditFoodViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbarAddEditFood);
         setSupportActionBar(toolbar);
@@ -75,7 +70,9 @@ public class AddEditFoodActivity extends AppCompatActivity {
         ivFoodPreview = findViewById(R.id.ivFoodPreview);
         imagePlaceholder = findViewById(R.id.imagePlaceholder);
         btnPickFoodImage = findViewById(R.id.btnPickFoodImage);
-        MaterialButton btnSaveFood = findViewById(R.id.btnSaveFood);
+        btnSaveFood = findViewById(R.id.btnSaveFood);
+
+        observeViewModel();
 
         View.OnClickListener pickImage = v -> pickImageLauncher.launch(
                 new PickVisualMediaRequest.Builder()
@@ -103,43 +100,15 @@ public class AddEditFoodActivity extends AppCompatActivity {
     }
 
     private void uploadFoodImage(Uri uri) {
-        btnPickFoodImage.setEnabled(false);
         Toast.makeText(this, R.string.uploading_image, Toast.LENGTH_SHORT).show();
-
         MultipartBody.Part part;
         try {
             part = ImageUploadHelper.createImagePart(this, uri);
         } catch (IOException e) {
-            btnPickFoodImage.setEnabled(true);
             Toast.makeText(this, R.string.image_upload_failed, Toast.LENGTH_LONG).show();
             return;
         }
-
-        apiService.uploadImage(part).enqueue(new Callback<ApiResponse<UploadResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<UploadResponse>> call,
-                                   Response<ApiResponse<UploadResponse>> response) {
-                btnPickFoodImage.setEnabled(true);
-                ApiResponse<UploadResponse> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess()
-                        && body.getData() != null && body.getData().getUrl() != null) {
-                    String url = body.getData().getUrl();
-                    imageUrl = url;
-                    showPreview(url);
-                } else {
-                    Toast.makeText(AddEditFoodActivity.this,
-                            ApiErrorHelper.getMessage(response, getString(R.string.image_upload_failed)),
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<UploadResponse>> call, Throwable t) {
-                btnPickFoodImage.setEnabled(true);
-                Toast.makeText(AddEditFoodActivity.this,
-                        getString(R.string.network_error, t.getMessage()), Toast.LENGTH_LONG).show();
-            }
-        });
+        viewModel.uploadImage(part);
     }
 
     private void showPreview(String url) {
@@ -155,6 +124,38 @@ public class AddEditFoodActivity extends AppCompatActivity {
                 .placeholder(R.drawable.ic_food_coffee)
                 .error(R.drawable.ic_food_coffee)
                 .into(ivFoodPreview);
+    }
+
+    private void observeViewModel() {
+        viewModel.getSaveResult().observe(this, resource -> {
+            if (resource == null) {
+                return;
+            }
+            btnSaveFood.setEnabled(!resource.isLoading());
+            if (resource.isSuccess()) {
+                Toast.makeText(this, "Food saved successfully", Toast.LENGTH_SHORT).show();
+                finish();
+            } else if (resource.isError()) {
+                Toast.makeText(this,
+                        resource.message != null ? resource.message : "Failed to save food",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getUploadResult().observe(this, resource -> {
+            if (resource == null) {
+                return;
+            }
+            btnPickFoodImage.setEnabled(!resource.isLoading());
+            if (resource.isSuccess() && resource.data != null && resource.data.getUrl() != null) {
+                imageUrl = resource.data.getUrl();
+                showPreview(imageUrl);
+            } else if (resource.isError()) {
+                Toast.makeText(this,
+                        resource.message != null ? resource.message : getString(R.string.image_upload_failed),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void saveFood() {
@@ -190,30 +191,7 @@ public class AddEditFoodActivity extends AppCompatActivity {
         food.setImageUrl(imageUrl);
         food.setAvailable(available);
 
-        Callback<ApiResponse<FoodModel>> callback = new Callback<ApiResponse<FoodModel>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<FoodModel>> call, Response<ApiResponse<FoodModel>> response) {
-                ApiResponse<FoodModel> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess()) {
-                    Toast.makeText(AddEditFoodActivity.this, "Food saved successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    String msg = ApiErrorHelper.getMessage(response, "Failed to save food");
-                    Toast.makeText(AddEditFoodActivity.this, msg, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<FoodModel>> call, Throwable t) {
-                Toast.makeText(AddEditFoodActivity.this, "Network error", Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        if (isEditMode) {
-            apiService.updateFood(food).enqueue(callback);
-        } else {
-            apiService.createFood(food).enqueue(callback);
-        }
+        viewModel.saveFood(food, isEditMode);
     }
 
     @Override

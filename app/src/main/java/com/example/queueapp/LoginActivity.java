@@ -10,23 +10,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiErrorHelper;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
-import com.example.queueapp.api.model.LoginRequest;
 import com.example.queueapp.api.model.LoginResponse;
 import com.example.queueapp.auth.RoleNavigation;
 import com.example.queueapp.data.AppSession;
 import com.example.queueapp.data.SessionManager;
+import com.example.queueapp.viewmodel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -38,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etPassword;
     private MaterialButton btnLogin;
     private ProgressBar progressLogin;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,29 +53,33 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         progressLogin = findViewById(R.id.progressLogin);
         TextView tvRegisterLink = findViewById(R.id.tvRegisterLink);
-        
-        MaterialButton btnQuickCustomer = findViewById(R.id.btnQuickCustomer);
-        MaterialButton btnQuickStaff = findViewById(R.id.btnQuickStaff);
-        MaterialButton btnQuickAdmin = findViewById(R.id.btnQuickAdmin);
-
-        btnQuickCustomer.setOnClickListener(v -> {
-            etEmail.setText("customer@wequeue.com");
-            etPassword.setText("customer123");
-        });
-        
-        btnQuickStaff.setOnClickListener(v -> {
-            etEmail.setText("staff@wequeue.com");
-            etPassword.setText("staff123");
-        });
-        
-        btnQuickAdmin.setOnClickListener(v -> {
-            etEmail.setText("admin@wequeue.com");
-            etPassword.setText("admin123");
-        });
 
         btnLogin.setOnClickListener(v -> attemptLogin());
         tvRegisterLink.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel.getAuthResult().observe(this, resource -> {
+            if (resource == null) {
+                return;
+            }
+            if (resource.isLoading()) {
+                setLoading(true);
+                return;
+            }
+            setLoading(false);
+            if (resource.isSuccess() && resource.data != null && resource.data.getToken() != null) {
+                LoginResponse data = resource.data;
+                SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
+                AppSession.getInstance().applyUser(data.getUser());
+                RoleNavigation.navigateToRoleHome(LoginActivity.this);
+                finish();
+            } else {
+                Toast.makeText(LoginActivity.this,
+                        resource.message != null ? resource.message : getString(R.string.login_failed),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
 
         if (getIntent().getBooleanExtra(EXTRA_SESSION_EXPIRED, false)) {
             Toast.makeText(this, R.string.session_expired, Toast.LENGTH_LONG).show();
@@ -114,46 +112,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        setLoading(true);
-
-        ApiService api = ApiConfig.getApiService();
-        api.login(new LoginRequest(email, password)).enqueue(new Callback<ApiResponse<LoginResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<LoginResponse>> call,
-                                   Response<ApiResponse<LoginResponse>> response) {
-                setLoading(false);
-                if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(LoginActivity.this,
-                            ApiErrorHelper.getMessage(response, getString(R.string.login_failed)),
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                ApiResponse<LoginResponse> body = response.body();
-                if (!body.isSuccess() || body.getData() == null
-                        || body.getData().getToken() == null) {
-                    Toast.makeText(LoginActivity.this,
-                            body.getMessage() != null ? body.getMessage() : getString(R.string.login_failed),
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                LoginResponse data = body.getData();
-                SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
-                AppSession.getInstance().applyUser(data.getUser());
-
-                RoleNavigation.navigateToRoleHome(LoginActivity.this);
-                finish();
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
-                setLoading(false);
-                Toast.makeText(LoginActivity.this,
-                        getString(R.string.network_error, t.getMessage()),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
+        authViewModel.login(email, password);
     }
 
     private void setLoading(boolean loading) {

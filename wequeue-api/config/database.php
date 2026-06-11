@@ -11,6 +11,10 @@ define('DB_USER', getenv('DB_USER') ?: 'mobiledb_possibleus');
 define('DB_PASS', getenv('DB_PASS') ?: 'cc31f5b40ea67e6e9dea000b4fe168f3cac9a59b');
 define('DB_CHARSET', 'utf8mb4');
 
+/** App timezone offset (WIB = UTC+7). Keeps NOW()/CURRENT_TIMESTAMP and returned
+ *  TIMESTAMP columns in local time so the app shows correct "x min ago" values. */
+define('DB_TIME_ZONE', getenv('DB_TIME_ZONE') ?: '+07:00');
+
 /** Minutes estimated per person in queue */
 define('ESTIMATED_WAIT_PER_PERSON', 3);
 
@@ -29,6 +33,9 @@ function getDb(): PDO
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
+
+    // Align the session timezone so timestamps are stored/returned in local time.
+    $pdo->exec("SET time_zone = '" . DB_TIME_ZONE . "'");
 
     return $pdo;
 }

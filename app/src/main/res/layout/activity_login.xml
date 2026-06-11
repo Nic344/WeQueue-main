@@ -174,54 +174,5 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="Quick Fill (Demo)"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/loginCard" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@+id/loginCard">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuickCustomer"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="Customer"
-                android:textSize="11sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuickStaff"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="Staff"
-                android:textSize="11sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuickAdmin"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Admin"
-                android:textSize="11sp" />
-        </LinearLayout>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

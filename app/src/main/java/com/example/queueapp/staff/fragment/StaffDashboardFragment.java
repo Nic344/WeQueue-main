@@ -12,35 +12,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.queueapp.R;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.api.model.StaffDashboardResponse;
 import com.example.queueapp.api.model.StaffQueueItem;
 import com.example.queueapp.data.AppSession;
 import com.example.queueapp.staff.adapter.StaffQueueAdapter;
+import com.example.queueapp.viewmodel.StaffDashboardViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.JsonObject;
 
 import java.util.Collections;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
+/** Staff Dashboard screen (MVVM). */
 public class StaffDashboardFragment extends Fragment {
 
     private static final long AUTO_REFRESH_INTERVAL = 30_000L;
-    private static final int MAX_RETRIES = 2;
-    private static final long RETRY_DELAY_MS = 1_200L;
 
-    private ApiService apiService;
+    private StaffDashboardViewModel viewModel;
     private StaffQueueAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
 
@@ -53,10 +46,13 @@ public class StaffDashboardFragment extends Fragment {
     private MaterialButton btnCompleteService;
 
     private final Handler autoRefreshHandler = new Handler(Looper.getMainLooper());
-    private final Runnable autoRefreshRunnable = () -> {
-        if (isAdded()) {
-            loadDashboard();
-            autoRefreshHandler.postDelayed(this.autoRefreshRunnable, AUTO_REFRESH_INTERVAL);
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded()) {
+                viewModel.loadDashboard();
+                autoRefreshHandler.postDelayed(this, AUTO_REFRESH_INTERVAL);
+            }
         }
     };
 
@@ -70,7 +66,7 @@ public class StaffDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiService = ApiConfig.getApiService();
+        viewModel = new ViewModelProvider(this).get(StaffDashboardViewModel.class);
         AppSession session = AppSession.getInstance();
 
         TextView tvStaffWelcome = view.findViewById(R.id.tvStaffWelcome);
@@ -93,20 +89,25 @@ public class StaffDashboardFragment extends Fragment {
         rvLiveQueue.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvLiveQueue.setAdapter(adapter);
 
-        btnCallNext.setOnClickListener(v -> callNext());
+        btnCallNext.setOnClickListener(v -> {
+            btnCallNext.setEnabled(false);
+            btnCallNext.setText(R.string.loading);
+            viewModel.callNext();
+        });
         btnCompleteService.setOnClickListener(v -> confirmComplete());
         btnSkipQueue.setVisibility(View.GONE);
-        btnRefreshQueue.setOnClickListener(v -> loadDashboard());
+        btnRefreshQueue.setOnClickListener(v -> viewModel.loadDashboard());
 
-        swipeRefresh.setOnRefreshListener(this::loadDashboard);
+        swipeRefresh.setOnRefreshListener(() -> viewModel.loadDashboard());
 
-        loadDashboard();
+        observeViewModel();
+        viewModel.loadDashboard();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadDashboard();
+        viewModel.loadDashboard();
         autoRefreshHandler.postDelayed(autoRefreshRunnable, AUTO_REFRESH_INTERVAL);
     }
 
@@ -116,61 +117,71 @@ public class StaffDashboardFragment extends Fragment {
         autoRefreshHandler.removeCallbacks(autoRefreshRunnable);
     }
 
-    private void loadDashboard() {
-        loadDashboard(0);
-    }
-
-    private void loadDashboard(final int attempt) {
-        apiService.getStaffDashboard().enqueue(new Callback<ApiResponse<StaffDashboardResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffDashboardResponse>> call,
-                                   Response<ApiResponse<StaffDashboardResponse>> response) {
-                if (!isAdded()) return;
-
-                ApiResponse<StaffDashboardResponse> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
-                    swipeRefresh.setRefreshing(false);
-                    StaffDashboardResponse data = body.getData();
-                    populateDashboard(data);
-                } else {
-                    String msg = body != null && body.getMessage() != null
-                            ? body.getMessage() : "Failed to load dashboard";
-                    handleLoadFailure(attempt, msg);
-                }
+    private void observeViewModel() {
+        viewModel.getDashboard().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
             }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffDashboardResponse>> call, Throwable t) {
-                if (!isAdded()) return;
-                handleLoadFailure(attempt, getString(R.string.network_error, t.getMessage()));
+            swipeRefresh.setRefreshing(false);
+            if (resource.isSuccess() && resource.data != null) {
+                populateDashboard(resource.data);
+            } else if (resource.isError()) {
+                Snackbar.make(requireView(),
+                                resource.message != null ? resource.message : "Failed to load dashboard",
+                                Snackbar.LENGTH_LONG)
+                        .setAction(R.string.retry, v -> viewModel.loadDashboard()).show();
             }
         });
-    }
 
-    private void handleLoadFailure(int attempt, String message) {
-        if (!isAdded()) return;
-
-        // Transient failures (cold start / token timing) are common on the first
-        // load. Retry silently a couple of times before surfacing the error.
-        if (attempt < MAX_RETRIES) {
-            autoRefreshHandler.postDelayed(() -> {
-                if (isAdded()) {
-                    loadDashboard(attempt + 1);
+        viewModel.getCallNextResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
+            }
+            btnCallNext.setEnabled(true);
+            btnCallNext.setText(R.string.call_next);
+            if (resource.isSuccess()) {
+                StaffQueueItem item = resource.data;
+                if (item != null) {
+                    String dialogMsg = "Now calling: " + item.getQueueNumber();
+                    if (item.getCustomerName() != null) {
+                        dialogMsg += " — " + item.getCustomerName();
+                    }
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Queue Called")
+                            .setMessage(dialogMsg)
+                            .setPositiveButton(android.R.string.ok, (d, w) -> viewModel.loadDashboard())
+                            .setCancelable(false)
+                            .show();
+                } else {
+                    Snackbar.make(requireView(), "No customers waiting", Snackbar.LENGTH_SHORT).show();
                 }
-            }, RETRY_DELAY_MS);
-            return;
-        }
+            } else if (resource.isError()) {
+                Snackbar.make(requireView(),
+                        resource.message != null ? resource.message : "Failed to call next",
+                        Snackbar.LENGTH_LONG).show();
+            }
+        });
 
-        swipeRefresh.setRefreshing(false);
-        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG)
-                .setAction(R.string.retry, v -> loadDashboard()).show();
+        viewModel.getCompleteResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
+            }
+            btnCompleteService.setEnabled(true);
+            if (resource.isSuccess()) {
+                Snackbar.make(requireView(), "Queue completed!", Snackbar.LENGTH_SHORT).show();
+                viewModel.loadDashboard();
+            } else if (resource.isError()) {
+                Snackbar.make(requireView(),
+                        resource.message != null ? resource.message : "No serving queue found",
+                        Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void populateDashboard(StaffDashboardResponse data) {
         StaffQueueItem serving = data.getNowServing();
         if (serving != null) {
-            String servingText = getString(R.string.now_serving_label) + ": "
-                    + serving.getQueueNumber();
+            String servingText = getString(R.string.now_serving_label) + ": " + serving.getQueueNumber();
             if (serving.getCustomerName() != null) {
                 servingText += " — " + serving.getCustomerName();
             }
@@ -185,7 +196,8 @@ public class StaffDashboardFragment extends Fragment {
         cardActiveQueue.setText(getString(R.string.status_waiting) + "\n" + data.getWaitingCount());
         cardCustomersToday.setText(getString(R.string.status_completed) + "\n" + data.getCompletedToday());
         cardAvgWait.setText(getString(R.string.status_cancelled) + "\n" + data.getCancelledToday());
-        cardCompleted.setText("Total\n" + (data.getWaitingCount() + data.getCompletedToday() + data.getCancelledToday()));
+        cardCompleted.setText("Total\n"
+                + (data.getWaitingCount() + data.getCompletedToday() + data.getCancelledToday()));
 
         if (data.getWaitingList() != null) {
             adapter.setItems(data.getWaitingList());
@@ -194,90 +206,15 @@ public class StaffDashboardFragment extends Fragment {
         }
     }
 
-    private void callNext() {
-        btnCallNext.setEnabled(false);
-        btnCallNext.setText(R.string.loading);
-
-        apiService.callNext().enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call,
-                                   Response<ApiResponse<StaffQueueItem>> response) {
-                if (!isAdded()) return;
-                btnCallNext.setEnabled(true);
-                btnCallNext.setText(R.string.call_next);
-
-                ApiResponse<StaffQueueItem> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess()) {
-                    StaffQueueItem item = body.getData();
-                    if (item != null) {
-                        String dialogMsg = "Now calling: " + item.getQueueNumber();
-                        if (item.getCustomerName() != null) {
-                            dialogMsg += " — " + item.getCustomerName();
-                        }
-                        new AlertDialog.Builder(requireContext())
-                                .setTitle("Queue Called")
-                                .setMessage(dialogMsg)
-                                .setPositiveButton(android.R.string.ok, (d, w) -> loadDashboard())
-                                .setCancelable(false)
-                                .show();
-                    } else {
-                        Snackbar.make(requireView(), "No customers waiting", Snackbar.LENGTH_SHORT).show();
-                    }
-                } else {
-                    String msg = body != null && body.getMessage() != null
-                            ? body.getMessage() : "Failed to call next";
-                    Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                if (!isAdded()) return;
-                btnCallNext.setEnabled(true);
-                btnCallNext.setText(R.string.call_next);
-                Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                        Snackbar.LENGTH_LONG).show();
-            }
-        });
-    }
-
     private void confirmComplete() {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.complete_queue)
                 .setMessage("Mark current queue as completed?")
-                .setPositiveButton(R.string.yes, (d, w) -> completeQueue())
+                .setPositiveButton(R.string.yes, (d, w) -> {
+                    btnCompleteService.setEnabled(false);
+                    viewModel.completeServing();
+                })
                 .setNegativeButton(R.string.no, null)
                 .show();
-    }
-
-    private void completeQueue() {
-        btnCompleteService.setEnabled(false);
-
-        apiService.completeQueue(new JsonObject()).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call,
-                                   Response<ApiResponse<StaffQueueItem>> response) {
-                if (!isAdded()) return;
-                btnCompleteService.setEnabled(true);
-
-                ApiResponse<StaffQueueItem> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess()) {
-                    Snackbar.make(requireView(), "Queue completed!", Snackbar.LENGTH_SHORT).show();
-                    loadDashboard();
-                } else {
-                    String msg = body != null && body.getMessage() != null
-                            ? body.getMessage() : "No serving queue found";
-                    Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                if (!isAdded()) return;
-                btnCompleteService.setEnabled(true);
-                Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                        Snackbar.LENGTH_LONG).show();
-            }
-        });
     }
 }

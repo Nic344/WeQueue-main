@@ -12,32 +12,25 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.queueapp.R;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
-import com.example.queueapp.api.model.StaffAllQueuesResponse;
 import com.example.queueapp.api.model.StaffQueueItem;
 import com.example.queueapp.staff.adapter.StaffQueueAdapter;
+import com.example.queueapp.viewmodel.StaffQueueViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
+/** Staff Queue Monitor screen (MVVM). */
 public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.OnQueueActionListener {
 
-    private ApiService apiService;
+    private StaffQueueViewModel viewModel;
     private StaffQueueAdapter adapter;
     private RecyclerView rvQueueList;
     private SwipeRefreshLayout swipeRefresh;
@@ -57,7 +50,7 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiService = ApiConfig.getApiService();
+        viewModel = new ViewModelProvider(this).get(StaffQueueViewModel.class);
 
         rvQueueList = view.findViewById(R.id.rvQueueList);
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
@@ -70,17 +63,58 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
         rvQueueList.setAdapter(adapter);
 
         swipeRefresh.setColorSchemeResources(R.color.staff_primary);
-        swipeRefresh.setOnRefreshListener(() -> loadQueues(currentStatusFilter));
+        swipeRefresh.setOnRefreshListener(() -> viewModel.loadQueues(currentStatusFilter));
 
         setupChips(view);
         setupSearch(searchView);
-        loadQueues(currentStatusFilter);
+        observeViewModel();
+        viewModel.loadQueues(currentStatusFilter);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadQueues(currentStatusFilter);
+        viewModel.loadQueues(currentStatusFilter);
+    }
+
+    private void observeViewModel() {
+        viewModel.getQueues().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) {
+                return;
+            }
+            progressBar.setVisibility(resource.isLoading() ? View.VISIBLE : View.GONE);
+            if (!resource.isLoading()) {
+                swipeRefresh.setRefreshing(false);
+            }
+            if (resource.isSuccess()) {
+                masterList = resource.data != null && resource.data.getQueues() != null
+                        ? new ArrayList<>(resource.data.getQueues()) : new ArrayList<>();
+                adapter.setItems(masterList);
+                updateEmptyState();
+            } else if (resource.isError()) {
+                masterList = new ArrayList<>();
+                adapter.setItems(masterList);
+                updateEmptyState();
+                Snackbar.make(requireView(),
+                                resource.message != null ? resource.message : "Failed to load queues",
+                                Snackbar.LENGTH_LONG)
+                        .setAction(R.string.retry, v -> viewModel.loadQueues(currentStatusFilter)).show();
+            }
+        });
+
+        viewModel.getActionResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
+            }
+            if (resource.isSuccess()) {
+                Snackbar.make(requireView(), "Done", Snackbar.LENGTH_SHORT).show();
+                viewModel.loadQueues(currentStatusFilter);
+            } else if (resource.isError()) {
+                Snackbar.make(requireView(),
+                        resource.message != null ? resource.message : "Action failed",
+                        Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void setupChips(View view) {
@@ -96,7 +130,7 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
             else if (v == chipServing) currentStatusFilter = "serving";
             else if (v == chipCompleted) currentStatusFilter = "completed";
             else if (v == chipCancelled) currentStatusFilter = "cancelled";
-            loadQueues(currentStatusFilter);
+            viewModel.loadQueues(currentStatusFilter);
         };
 
         chipAll.setOnClickListener(chipListener);
@@ -149,50 +183,6 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
         updateEmptyState();
     }
 
-    private void loadQueues(String statusFilter) {
-        progressBar.setVisibility(View.VISIBLE);
-        tvEmptyState.setVisibility(View.GONE);
-
-        apiService.getAllQueues(statusFilter, "", 1, 50)
-                .enqueue(new Callback<ApiResponse<StaffAllQueuesResponse>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<StaffAllQueuesResponse>> call,
-                                           Response<ApiResponse<StaffAllQueuesResponse>> response) {
-                        if (!isAdded()) return;
-                        progressBar.setVisibility(View.GONE);
-                        swipeRefresh.setRefreshing(false);
-
-                        ApiResponse<StaffAllQueuesResponse> body = response.body();
-                        if (response.isSuccessful() && body != null && body.isSuccess()
-                                && body.getData() != null && body.getData().getQueues() != null) {
-                            masterList = new ArrayList<>(body.getData().getQueues());
-                            adapter.setItems(masterList);
-                        } else {
-                            masterList = Collections.emptyList();
-                            adapter.setItems(masterList);
-                            String msg = body != null && body.getMessage() != null
-                                    ? body.getMessage() : "Failed to load queues";
-                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.retry, v -> loadQueues(statusFilter)).show();
-                        }
-                        updateEmptyState();
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<StaffAllQueuesResponse>> call, Throwable t) {
-                        if (!isAdded()) return;
-                        progressBar.setVisibility(View.GONE);
-                        swipeRefresh.setRefreshing(false);
-                        masterList = Collections.emptyList();
-                        adapter.setItems(masterList);
-                        updateEmptyState();
-                        Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                                        Snackbar.LENGTH_LONG)
-                                .setAction(R.string.retry, v -> loadQueues(statusFilter)).show();
-                    }
-                });
-    }
-
     private void updateEmptyState() {
         boolean empty = adapter.getItemCount() == 0;
         tvEmptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
@@ -203,31 +193,7 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
 
     @Override
     public void onSkip(StaffQueueItem item) {
-        JsonObject body = new JsonObject();
-        body.addProperty("queue_id", item.getId());
-
-        apiService.skipQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call,
-                                   Response<ApiResponse<StaffQueueItem>> response) {
-                if (!isAdded()) return;
-                ApiResponse<StaffQueueItem> b = response.body();
-                if (response.isSuccessful() && b != null && b.isSuccess()) {
-                    Snackbar.make(requireView(), "Queue skipped", Snackbar.LENGTH_SHORT).show();
-                    loadQueues(currentStatusFilter);
-                } else {
-                    String msg = b != null && b.getMessage() != null ? b.getMessage() : "Skip failed";
-                    Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                if (!isAdded()) return;
-                Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                        Snackbar.LENGTH_LONG).show();
-            }
-        });
+        viewModel.skip(item.getId());
     }
 
     @Override
@@ -235,33 +201,7 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.cancel_queue)
                 .setMessage("Cancel queue " + item.getQueueNumber() + "?")
-                .setPositiveButton(R.string.yes, (d, w) -> {
-                    JsonObject body = new JsonObject();
-                    body.addProperty("queue_id", item.getId());
-
-                    apiService.staffCancelQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-                        @Override
-                        public void onResponse(Call<ApiResponse<StaffQueueItem>> call,
-                                               Response<ApiResponse<StaffQueueItem>> response) {
-                            if (!isAdded()) return;
-                            ApiResponse<StaffQueueItem> b = response.body();
-                            if (response.isSuccessful() && b != null && b.isSuccess()) {
-                                Snackbar.make(requireView(), "Queue cancelled", Snackbar.LENGTH_SHORT).show();
-                                loadQueues(currentStatusFilter);
-                            } else {
-                                String msg = b != null && b.getMessage() != null ? b.getMessage() : "Cancel failed";
-                                Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                            if (!isAdded()) return;
-                            Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                                    Snackbar.LENGTH_LONG).show();
-                        }
-                    });
-                })
+                .setPositiveButton(R.string.yes, (d, w) -> viewModel.cancel(item.getId()))
                 .setNegativeButton(R.string.no, null)
                 .show();
     }
@@ -271,33 +211,7 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.complete_queue)
                 .setMessage("Complete queue " + item.getQueueNumber() + "?")
-                .setPositiveButton(R.string.yes, (d, w) -> {
-                    JsonObject body = new JsonObject();
-                    body.addProperty("queue_id", item.getId());
-
-                    apiService.completeQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-                        @Override
-                        public void onResponse(Call<ApiResponse<StaffQueueItem>> call,
-                                               Response<ApiResponse<StaffQueueItem>> response) {
-                            if (!isAdded()) return;
-                            ApiResponse<StaffQueueItem> b = response.body();
-                            if (response.isSuccessful() && b != null && b.isSuccess()) {
-                                Snackbar.make(requireView(), "Queue completed!", Snackbar.LENGTH_SHORT).show();
-                                loadQueues(currentStatusFilter);
-                            } else {
-                                String msg = b != null && b.getMessage() != null ? b.getMessage() : "Complete failed";
-                                Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                            if (!isAdded()) return;
-                            Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()),
-                                    Snackbar.LENGTH_LONG).show();
-                        }
-                    });
-                })
+                .setPositiveButton(R.string.yes, (d, w) -> viewModel.complete(item.getId()))
                 .setNegativeButton(R.string.no, null)
                 .show();
     }

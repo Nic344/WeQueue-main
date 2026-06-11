@@ -15,25 +15,21 @@ import com.example.queueapp.LoginActivity;
 import com.example.queueapp.R;
 import com.example.queueapp.admin.fragment.AdminFoodsFragment;
 import com.example.queueapp.admin.fragment.AdminUsersFragment;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.auth.RoleNavigation;
 import com.example.queueapp.data.AppSession;
 import com.example.queueapp.data.SessionManager;
 import com.example.queueapp.fragment.ProfileFragment;
 import com.example.queueapp.staff.fragment.StaffDashboardFragment;
 import com.example.queueapp.staff.fragment.StaffQueueFragment;
+import com.example.queueapp.viewmodel.AuthViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import androidx.lifecycle.ViewModelProvider;
 
 public class AdminMainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private ApiService apiService;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +46,16 @@ public class AdminMainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_admin_main);
 
-        apiService = ApiConfig.getApiService();
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel.getLogoutResult().observe(this, resource -> {
+            if (resource != null && !resource.isLoading()) {
+                finishLogout();
+            }
+        });
+
         toolbar = findViewById(R.id.adminToolbar);
         setSupportActionBar(toolbar);
-        
+
         BottomNavigationView bottomNav = findViewById(R.id.adminBottomNav);
 
         // The bottom nav is taller than ?attr/actionBarSize (it has labels), so match
@@ -131,17 +133,7 @@ public class AdminMainActivity extends AppCompatActivity {
     }
 
     private void performLogout() {
-        apiService.logout().enqueue(new Callback<ApiResponse<Object>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
-                finishLogout();
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
-                finishLogout();
-            }
-        });
+        authViewModel.logout();
     }
 
     private void finishLogout() {

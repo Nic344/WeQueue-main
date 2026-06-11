@@ -9,19 +9,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.queueapp.R;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.api.model.StaffQueueItem;
+import com.example.queueapp.viewmodel.StaffQueueViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.gson.JsonObject;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class QueueDetailBottomSheet extends BottomSheetDialogFragment {
 
@@ -30,9 +24,9 @@ public class QueueDetailBottomSheet extends BottomSheetDialogFragment {
     private static final String ARG_ENTRY_NAME = "entry_name";
     private static final String ARG_ENTRY_STATUS = "entry_status";
 
-    private ApiService apiService;
+    private StaffQueueViewModel viewModel;
     private Runnable onUpdated;
-    
+
     private int queueId;
     private String queueNumber;
     private String customerName;
@@ -63,9 +57,9 @@ public class QueueDetailBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        apiService = ApiConfig.getApiService();
-        
+
+        viewModel = new ViewModelProvider(this).get(StaffQueueViewModel.class);
+
         if (getArguments() != null) {
             queueId = getArguments().getInt(ARG_ENTRY_ID);
             queueNumber = getArguments().getString(ARG_ENTRY_NUMBER);
@@ -84,8 +78,7 @@ public class QueueDetailBottomSheet extends BottomSheetDialogFragment {
         tvDetailQueueNumber.setText(queueNumber);
         tvDetailCustomer.setText(customerName != null ? customerName : "");
         tvDetailStatus.setText(status != null ? status : "");
-        
-        // Setup visibility based on status
+
         if ("waiting".equals(status)) {
             btnCallCustomer.setVisibility(View.GONE);
             btnCompleteQueue.setVisibility(View.GONE);
@@ -103,80 +96,26 @@ public class QueueDetailBottomSheet extends BottomSheetDialogFragment {
             btnCancelQueueDetail.setVisibility(View.GONE);
         }
 
-        btnSkipQueue.setOnClickListener(v -> skipQueue());
-        btnCompleteQueue.setOnClickListener(v -> completeQueue());
-        btnCancelQueueDetail.setOnClickListener(v -> cancelQueue());
-    }
+        btnSkipQueue.setOnClickListener(v -> viewModel.skip(queueId));
+        btnCompleteQueue.setOnClickListener(v -> viewModel.complete(queueId));
+        btnCancelQueueDetail.setOnClickListener(v -> viewModel.cancel(queueId));
 
-    private void skipQueue() {
-        JsonObject body = new JsonObject();
-        body.addProperty("queue_id", queueId);
-        
-        apiService.skipQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call, Response<ApiResponse<StaffQueueItem>> response) {
-                handleResponse(response, "Queue skipped");
+        viewModel.getActionResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
             }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                notifyError(t.getMessage());
-            }
-        });
-    }
-
-    private void completeQueue() {
-        JsonObject body = new JsonObject();
-        body.addProperty("queue_id", queueId);
-        
-        apiService.completeQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call, Response<ApiResponse<StaffQueueItem>> response) {
-                handleResponse(response, "Queue completed");
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                notifyError(t.getMessage());
+            if (resource.isSuccess()) {
+                if (onUpdated != null) {
+                    onUpdated.run();
+                }
+                Toast.makeText(requireContext(), "Done", Toast.LENGTH_SHORT).show();
+                dismiss();
+            } else if (resource.isError()) {
+                Toast.makeText(requireContext(),
+                        getString(R.string.action_failed,
+                                resource.message != null ? resource.message : ""),
+                        Toast.LENGTH_LONG).show();
             }
         });
-    }
-
-    private void cancelQueue() {
-        JsonObject body = new JsonObject();
-        body.addProperty("queue_id", queueId);
-        
-        apiService.staffCancelQueue(body).enqueue(new Callback<ApiResponse<StaffQueueItem>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StaffQueueItem>> call, Response<ApiResponse<StaffQueueItem>> response) {
-                handleResponse(response, "Queue cancelled");
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StaffQueueItem>> call, Throwable t) {
-                notifyError(t.getMessage());
-            }
-        });
-    }
-
-    private void handleResponse(Response<ApiResponse<StaffQueueItem>> response, String successMessage) {
-        if (!isAdded()) return;
-        ApiResponse<StaffQueueItem> body = response.body();
-        if (response.isSuccessful() && body != null && body.isSuccess()) {
-            if (onUpdated != null) {
-                onUpdated.run();
-            }
-            Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show();
-            dismiss();
-        } else {
-            String msg = body != null && body.getMessage() != null ? body.getMessage() : "Action failed";
-            notifyError(msg);
-        }
-    }
-
-    private void notifyError(String message) {
-        if (isAdded()) {
-            Toast.makeText(requireContext(), getString(R.string.action_failed, message), Toast.LENGTH_LONG).show();
-        }
     }
 }

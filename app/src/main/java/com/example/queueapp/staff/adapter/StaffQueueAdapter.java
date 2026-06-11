@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.ViewHolder> {
@@ -199,22 +200,30 @@ public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.Vi
 
         private String formatTime(String createdAt) {
             if (createdAt == null || createdAt.isEmpty()) return "";
+            // The backend returns timestamps in WIB (UTC+7); parse them in that
+            // zone explicitly so elapsed time is correct regardless of device locale.
+            TimeZone serverZone = TimeZone.getTimeZone("GMT+7");
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                sdf.setTimeZone(serverZone);
                 Date date = sdf.parse(createdAt);
                 if (date != null) {
                     long diffMs = System.currentTimeMillis() - date.getTime();
                     long minutes = TimeUnit.MILLISECONDS.toMinutes(diffMs);
+                    if (minutes < 0) return "Just now";
                     if (minutes < 1) return "Just now";
                     if (minutes < 60) return minutes + " min ago";
                     long hours = TimeUnit.MILLISECONDS.toHours(diffMs);
-                    return hours + "h ago";
+                    if (hours < 24) return hours + "h ago";
+                    long days = TimeUnit.MILLISECONDS.toDays(diffMs);
+                    return days + "d ago";
                 }
             } catch (ParseException ignored) {
             }
-            // Fallback: show time portion
+            // Fallback: show time portion in local time
             try {
                 SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                in.setTimeZone(serverZone);
                 SimpleDateFormat out = new SimpleDateFormat("HH:mm", Locale.US);
                 Date d = in.parse(createdAt);
                 if (d != null) return out.format(d);

@@ -10,32 +10,25 @@ import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.queueapp.R;
 import com.example.queueapp.SearchActivity;
 import com.example.queueapp.adapter.FavoriteAdapter;
-import com.example.queueapp.api.ApiConfig;
-import com.example.queueapp.api.ApiErrorHelper;
-import com.example.queueapp.api.ApiService;
-import com.example.queueapp.api.model.ApiResponse;
-import com.example.queueapp.api.model.FavoriteListResponse;
 import com.example.queueapp.api.model.FavoriteModel;
-import com.example.queueapp.api.model.FoodIdRequest;
+import com.example.queueapp.viewmodel.FavoritesViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Collections;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
+/** Customer Favorites screen (MVVM). */
 public class FavoritesFragment extends Fragment {
 
-    private ApiService apiService;
+    private FavoritesViewModel viewModel;
     private FavoriteAdapter adapter;
     private View emptyState;
     private RecyclerView rvFavorites;
@@ -51,7 +44,8 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiService = ApiConfig.getApiService();
+        viewModel = new ViewModelProvider(this).get(FavoritesViewModel.class);
+
         rvFavorites = view.findViewById(R.id.rvFavorites);
         emptyState = view.findViewById(R.id.emptyFavoritesState);
         progressFavorites = view.findViewById(R.id.progressFavorites);
@@ -63,44 +57,37 @@ public class FavoritesFragment extends Fragment {
 
         btnBrowse.setOnClickListener(v -> startActivity(new Intent(requireContext(), SearchActivity.class)));
 
-        loadFavorites();
+        observeViewModel();
+        viewModel.loadFavorites();
     }
 
-    private void loadFavorites() {
-        setLoading(true);
-        apiService.getFavorites().enqueue(new Callback<ApiResponse<FavoriteListResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<FavoriteListResponse>> call,
-                                   Response<ApiResponse<FavoriteListResponse>> response) {
-                if (!isAdded()) {
-                    return;
-                }
-                ApiResponse<FavoriteListResponse> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess() && body.getData() != null) {
-                    List<FavoriteModel> favorites = body.getData().getFavorites();
-                    adapter.setItems(favorites != null ? favorites : Collections.emptyList());
-                    updateEmptyState();
-                } else {
-                    adapter.setItems(Collections.emptyList());
-                    updateEmptyState();
-                    showRetry(response, this::retry);
-                }
-                setLoading(false);
+    private void observeViewModel() {
+        viewModel.getFavorites().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) {
+                return;
             }
-
-            private void retry() {
-                loadFavorites();
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<FavoriteListResponse>> call, Throwable t) {
-                if (!isAdded()) {
-                    return;
-                }
+            setLoading(resource.isLoading());
+            if (resource.isSuccess()) {
+                List<FavoriteModel> favorites = resource.data != null
+                        ? resource.data.getFavorites() : null;
+                adapter.setItems(favorites != null ? favorites : Collections.emptyList());
+                updateEmptyState();
+            } else if (resource.isError()) {
                 adapter.setItems(Collections.emptyList());
                 updateEmptyState();
-                showRetry(t, FavoritesFragment.this::loadFavorites);
-                setLoading(false);
+                showRetry(resource.message, () -> viewModel.loadFavorites());
+            }
+        });
+
+        viewModel.getRemoveResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.isLoading()) {
+                return;
+            }
+            if (resource.isSuccess()) {
+                Snackbar.make(requireView(), R.string.removed_from_favorites, Snackbar.LENGTH_SHORT).show();
+                viewModel.loadFavorites();
+            } else if (resource.isError()) {
+                showRetry(resource.message, null);
             }
         });
     }
@@ -109,30 +96,7 @@ public class FavoritesFragment extends Fragment {
         if (position == RecyclerView.NO_POSITION) {
             return;
         }
-        apiService.removeFavorite(new FoodIdRequest(favorite.getId())).enqueue(new Callback<ApiResponse<Object>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
-                if (!isAdded()) {
-                    return;
-                }
-                ApiResponse<Object> body = response.body();
-                if (response.isSuccessful() && body != null && body.isSuccess()) {
-                    adapter.removeAt(position);
-                    updateEmptyState();
-                    Snackbar.make(anchor, R.string.removed_from_favorites, Snackbar.LENGTH_SHORT).show();
-                } else {
-                    showRetry(response, () -> removeFavorite(anchor, favorite, position));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
-                if (!isAdded()) {
-                    return;
-                }
-                showRetry(t, () -> removeFavorite(anchor, favorite, position));
-            }
-        });
+        viewModel.removeFavorite(favorite.getId());
     }
 
     private void updateEmptyState() {
@@ -143,30 +107,27 @@ public class FavoritesFragment extends Fragment {
 
     private void setLoading(boolean loading) {
         progressFavorites.setVisibility(loading ? View.VISIBLE : View.GONE);
-        rvFavorites.setVisibility(loading ? View.GONE : rvFavorites.getVisibility());
-        emptyState.setVisibility(loading ? View.GONE : emptyState.getVisibility());
+        if (loading) {
+            rvFavorites.setVisibility(View.GONE);
+            emptyState.setVisibility(View.GONE);
+        }
     }
 
-    private void showRetry(Response<?> response, Runnable retry) {
-        Snackbar.make(requireView(),
-                        ApiErrorHelper.getMessage(response, getString(R.string.load_failed,
-                                getString(R.string.favorites))),
-                        Snackbar.LENGTH_LONG)
-                .setAction(R.string.retry, v -> retry.run())
-                .show();
-    }
-
-    private void showRetry(Throwable t, Runnable retry) {
-        Snackbar.make(requireView(), getString(R.string.network_error, t.getMessage()), Snackbar.LENGTH_LONG)
-                .setAction(R.string.retry, v -> retry.run())
-                .show();
+    private void showRetry(@Nullable String message, @Nullable Runnable retry) {
+        String text = message != null ? message
+                : getString(R.string.load_failed, getString(R.string.favorites));
+        Snackbar bar = Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG);
+        if (retry != null) {
+            bar.setAction(R.string.retry, v -> retry.run());
+        }
+        bar.show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (apiService != null) {
-            loadFavorites();
+        if (viewModel != null) {
+            viewModel.loadFavorites();
         }
     }
 }

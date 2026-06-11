@@ -37,6 +37,8 @@ dependencies {
     implementation libs.cardview
     implementation libs.swiperefreshlayout
     implementation libs.fragment
+    implementation libs.lifecycle.viewmodel
+    implementation libs.lifecycle.livedata
     implementation libs.security.crypto
 
     implementation libs.retrofit
