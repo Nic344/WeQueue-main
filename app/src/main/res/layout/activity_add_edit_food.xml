@@ -84,31 +84,88 @@
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFoodImage"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <TextView
+            android:id="@+id/tvImageLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Food Image"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilFoodCategory" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFoodImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/divider"
+            app:strokeWidth="1dp"
+            app:layout_constraintTop_toBottomOf="@id/tvImageLabel">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFoodPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/food_image_preview"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/imagePlaceholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_menu_camera"
+                        app:tint="@color/text_hint" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/tap_to_upload_image"
+                        android:textColor="@color/text_hint"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPickFoodImage"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Image URL"
-            app:layout_constraintTop_toBottomOf="@id/tilFoodCategory">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etFoodImage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textUri" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="12dp"
+            android:text="@string/upload_image"
+            app:icon="@android:drawable/ic_menu_camera"
+            app:iconGravity="textStart"
+            app:layout_constraintTop_toBottomOf="@id/cardFoodImage" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchFoodAvailable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:checked="true"
             android:text="Available"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/tilFoodImage" />
+            app:layout_constraintTop_toBottomOf="@id/btnPickFoodImage" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveFood"

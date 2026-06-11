@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,7 +55,17 @@ public class AdminMainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         
         BottomNavigationView bottomNav = findViewById(R.id.adminBottomNav);
-        
+
+        // The bottom nav is taller than ?attr/actionBarSize (it has labels), so match
+        // the fragment container's bottom padding to the real nav height. This keeps
+        // content — and the "+" FAB anchored to the bottom — fully above the nav bar.
+        View fragmentContainer = findViewById(R.id.adminFragmentContainer);
+        bottomNav.post(() -> fragmentContainer.setPadding(
+                fragmentContainer.getPaddingLeft(),
+                fragmentContainer.getPaddingTop(),
+                fragmentContainer.getPaddingRight(),
+                bottomNav.getHeight()));
+
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             Fragment selectedFragment = null;

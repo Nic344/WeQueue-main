@@ -97,6 +97,19 @@
     <!-- Profile -->
     <string name="profile">Profile</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="change_password">Change Password</string>
+    <string name="change_photo">Change photo</string>
+    <string name="uploading_image">Uploading image…</string>
+    <string name="image_upload_failed">Failed to upload image</string>
+    <string name="food_image_preview">Food image preview</string>
+    <string name="tap_to_upload_image">Tap to upload an image</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="password_same_as_current">New password must be different from the current one</string>
+    <string name="password_changed">Password changed successfully</string>
+    <string name="password_change_failed">Failed to change password</string>
     <string name="notifications">Notifications</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="about">About</string>
@@ -110,6 +123,26 @@
     <string name="edit_profile_message">Profile editing is a UI preview feature.</string>
     <string name="profile_updated">Profile updated</string>
     <string name="notifications_message">Notification settings are UI preview only.</string>
+
+    <!-- Notifications -->
+    <string name="notif_enable_all">Enable Notifications</string>
+    <string name="notif_enable_all_desc">Turn all queue alerts on or off</string>
+    <string name="notif_queue_called">Your turn is up</string>
+    <string name="notif_queue_called_desc">Alert me when my number is called</string>
+    <string name="notif_queue_almost">Almost your turn</string>
+    <string name="notif_queue_almost_desc">Alert me when I am near the front</string>
+    <string name="notif_send_test">Send Test Notification</string>
+    <string name="notif_permission_warning">Notifications are blocked in system settings. Enable them to receive queue alerts.</string>
+    <string name="notif_permission_denied">Notification permission denied. You can enable it later in system settings.</string>
+    <string name="notif_enable_first">Enable notifications first</string>
+    <string name="notif_channel_queue_name">Queue Updates</string>
+    <string name="notif_channel_queue_desc">Alerts about your place in the queue</string>
+    <string name="notif_called_title">It\'s your turn!</string>
+    <string name="notif_called_body">Queue %1$s is being served now. Please head to the counter.</string>
+    <string name="notif_almost_title">Almost your turn</string>
+    <string name="notif_almost_body">You are #%1$d in line (queue %2$s). Get ready!</string>
+    <string name="notif_test_title">Notifications are working</string>
+    <string name="notif_test_body">This is a test alert from WeQueue.</string>
 
     <!-- Nav -->
     <string name="nav_home">Home</string>
@@ -129,6 +162,7 @@
     <string name="login_failed">Login failed. Please check your credentials.</string>
     <string name="register_failed">Registration failed. Please try again.</string>
     <string name="network_error">Network error: %1$s</string>
+    <string name="session_expired">Your session has expired. Please log in again.</string>
 
     <!-- Staff -->
     <string name="staff_dashboard">Dashboard</string>

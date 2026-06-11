@@ -80,3 +80,5 @@ Authorization: Bearer {token}
 | DELETE | `/favorites/remove.php` |
 | GET | `/user/profile.php` |
 | PUT | `/user/update.php` |
+| PUT | `/user/change-password.php` |
+| POST | `/upload/image.php` (multipart, field `file`) |

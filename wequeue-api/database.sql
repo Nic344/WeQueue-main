@@ -28,6 +28,7 @@ CREATE TABLE foods (
     price DECIMAL(12, 2) NOT NULL DEFAULT 0,
     image_url VARCHAR(500) DEFAULT NULL,
     category VARCHAR(80) DEFAULT 'General',
+    is_available TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

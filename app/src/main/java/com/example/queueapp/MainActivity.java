@@ -1,10 +1,13 @@
 package com.example.queueapp;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -19,6 +22,7 @@ import com.example.queueapp.fragment.HistoryFragment;
 import com.example.queueapp.fragment.HomeFragment;
 import com.example.queueapp.fragment.ProfileFragment;
 import com.example.queueapp.fragment.QueueFragment;
+import com.example.queueapp.util.NotificationPreferences;
 import com.example.queueapp.util.SystemUiHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -66,6 +70,28 @@ public class MainActivity extends RoleProtectedActivity {
         }
 
         handleNavigationIntent(getIntent());
+        maybeRequestNotificationPermission();
+    }
+
+    private static final int REQ_POST_NOTIFICATIONS = 2001;
+
+    /**
+     * Asks for the notification permission once on Android 13+ when the user
+     * still has notifications enabled (the default). Declining is non-blocking.
+     */
+    private void maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (!NotificationPreferences.getInstance(this).isMasterEnabled()) {
+            return;
+        }
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                    REQ_POST_NOTIFICATIONS);
+        }
     }
 
     /**

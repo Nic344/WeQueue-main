@@ -18,17 +18,21 @@ import com.example.queueapp.api.model.StaffDashboardResponse;
 import com.example.queueapp.api.model.StaffQueueItem;
 import com.example.queueapp.api.model.TakeQueueRequest;
 import com.example.queueapp.api.model.UpdateProfileRequest;
+import com.example.queueapp.api.model.UploadResponse;
 import com.example.queueapp.api.model.UserListResponse;
 
 import com.google.gson.JsonObject;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.HTTP;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 public interface ApiService {
@@ -94,6 +98,14 @@ public interface ApiService {
 
     @PUT("user/update.php")
     Call<ApiResponse<ProfileResponse>> updateProfile(@Body UpdateProfileRequest request);
+
+    @PUT("user/change-password.php")
+    Call<ApiResponse<Object>> changePassword(@Body com.example.queueapp.api.model.ChangePasswordRequest request);
+
+    // Upload (multipart)
+    @Multipart
+    @POST("upload/image.php")
+    Call<ApiResponse<UploadResponse>> uploadImage(@Part MultipartBody.Part file);
 
     // Staff
     @GET("staff/dashboard.php")

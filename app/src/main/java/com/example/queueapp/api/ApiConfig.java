@@ -21,12 +21,14 @@ public final class ApiConfig {
     public static final String BASE_URL = "http://10.0.2.2/webabiq/";
 
     private static ApiService apiService;
+    private static Context appContext;
 
     private ApiConfig() {
     }
 
     public static void init(Context context) {
-        SessionManager.getInstance().init(context.getApplicationContext());
+        appContext = context.getApplicationContext();
+        SessionManager.getInstance().init(appContext);
     }
 
     public static ApiService getApiService() {
@@ -34,9 +36,15 @@ public final class ApiConfig {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-            OkHttpClient client = new OkHttpClient.Builder()
+            OkHttpClient.Builder builder = new OkHttpClient.Builder()
                     .retryOnConnectionFailure(true)
-                    .addInterceptor(new AuthInterceptor())
+                    .addInterceptor(new AuthInterceptor());
+
+            if (appContext != null) {
+                builder.addInterceptor(new SessionExpiryInterceptor(appContext));
+            }
+
+            OkHttpClient client = builder
                     .addInterceptor(logging)
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)

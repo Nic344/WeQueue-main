@@ -2,13 +2,19 @@ package com.example.queueapp.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import com.example.queueapp.api.model.UserModel;
 import com.google.gson.Gson;
 
 public final class SessionManager {
 
+    private static final String TAG = "SessionManager";
     private static final String PREFS_NAME = "wequeue_session";
+    private static final String SECURE_PREFS_NAME = "wequeue_session_secure";
     private static final String KEY_TOKEN = "token";
     private static final String KEY_USER_JSON = "user_json";
 
@@ -28,8 +34,23 @@ public final class SessionManager {
     }
 
     public void init(Context context) {
-        prefs = context.getApplicationContext()
-                .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        Context app = context.getApplicationContext();
+        try {
+            MasterKey masterKey = new MasterKey.Builder(app)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            prefs = EncryptedSharedPreferences.create(
+                    app,
+                    SECURE_PREFS_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+        } catch (Exception e) {
+            // Encryption unavailable/corrupted on this device — fall back so the
+            // app still works (user just needs to log in again).
+            Log.w(TAG, "Encrypted storage unavailable, falling back to plain prefs", e);
+            prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        }
     }
 
     public void saveSession(String token, UserModel user) {

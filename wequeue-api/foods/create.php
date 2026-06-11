@@ -20,14 +20,15 @@ $price = (float) $input['price'];
 $description = trim((string) ($input['description'] ?? ''));
 $imageUrl = trim((string) ($input['image_url'] ?? ''));
 $category = trim((string) ($input['category'] ?? 'General'));
+$isAvailable = array_key_exists('is_available', $input) ? (int) (bool) $input['is_available'] : 1;
 
 if ($price < 0) {
     jsonError('Price must be zero or greater', 422);
 }
 
 $stmt = $pdo->prepare(
-    'INSERT INTO foods (name, description, price, image_url, category)
-     VALUES (:name, :description, :price, :image_url, :category)'
+    'INSERT INTO foods (name, description, price, image_url, category, is_available)
+     VALUES (:name, :description, :price, :image_url, :category, :is_available)'
 );
 $stmt->execute([
     'name' => $name,
@@ -35,6 +36,7 @@ $stmt->execute([
     'price' => $price,
     'image_url' => $imageUrl !== '' ? $imageUrl : null,
     'category' => $category !== '' ? $category : 'General',
+    'is_available' => $isAvailable,
 ]);
 
 $id = (int) $pdo->lastInsertId();
@@ -43,5 +45,6 @@ $fetch->execute(['id' => $id]);
 $food = $fetch->fetch();
 $food['id'] = (int) $food['id'];
 $food['price'] = (float) $food['price'];
+$food['is_available'] = (bool) $food['is_available'];
 
 jsonSuccess($food, 'Food created', 201);

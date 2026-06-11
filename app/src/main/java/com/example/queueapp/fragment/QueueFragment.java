@@ -3,6 +3,8 @@ package com.example.queueapp.fragment;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +29,7 @@ import com.example.queueapp.api.model.ApiResponse;
 import com.example.queueapp.api.model.MyQueueResponse;
 import com.example.queueapp.api.model.QueueModel;
 import com.example.queueapp.api.model.TakeQueueRequest;
+import com.example.queueapp.util.QueueNotifier;
 import com.example.queueapp.util.SystemUiHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -50,6 +53,18 @@ public class QueueFragment extends Fragment {
     private MaterialButton btnCancelQueue;
     private MaterialButton btnTakeQueueEmpty;
     private QueueModel activeQueue;
+
+    private static final long AUTO_REFRESH_INTERVAL = 20_000L;
+    private final Handler autoRefreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded()) {
+                loadMyQueue(false);
+                autoRefreshHandler.postDelayed(this, AUTO_REFRESH_INTERVAL);
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -99,6 +114,13 @@ public class QueueFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateStatusBarForQueueState();
+        autoRefreshHandler.postDelayed(autoRefreshRunnable, AUTO_REFRESH_INTERVAL);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        autoRefreshHandler.removeCallbacks(autoRefreshRunnable);
     }
 
     private void loadMyQueue(boolean showLoading) {
@@ -114,6 +136,7 @@ public class QueueFragment extends Fragment {
                 if (response.isSuccessful() && body != null && body.getData() != null) {
                     MyQueueResponse data = body.getData();
                     activeQueue = data.isHasActiveQueue() ? data.getQueue() : null;
+                    QueueNotifier.evaluate(requireContext(), activeQueue);
                     refreshUi();
                 } else {
                     showRetry(response, () -> loadMyQueue(true));

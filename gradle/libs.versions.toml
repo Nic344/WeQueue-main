@@ -11,6 +11,7 @@ recyclerview = "1.4.0"
 cardview = "1.0.0"
 swiperefreshlayout = "1.1.0"
 fragment = "1.8.9"
+securityCrypto = "1.1.0-alpha06"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 glide = "4.16.0"
@@ -27,6 +28,7 @@ recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

@@ -25,7 +25,7 @@ public class FoodModel {
     @SerializedName("created_at")
     private String createdAt;
 
-    @SerializedName("available")
+    @SerializedName("is_available")
     private boolean available = true;
 
     public int getId() {

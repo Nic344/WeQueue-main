@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/staff_auth.php';
+require_once __DIR__ . '/../helpers/uploads.php';
 
 sendCorsHeaders();
 requireMethod('DELETE');
@@ -21,7 +22,7 @@ if ($id <= 0) {
     jsonError('Food id is required', 422);
 }
 
-$check = $pdo->prepare('SELECT id, name FROM foods WHERE id = :id LIMIT 1');
+$check = $pdo->prepare('SELECT id, name, image_url FROM foods WHERE id = :id LIMIT 1');
 $check->execute(['id' => $id]);
 $food = $check->fetch();
 
@@ -32,4 +33,8 @@ if (!$food) {
 $stmt = $pdo->prepare('DELETE FROM foods WHERE id = :id');
 $stmt->execute(['id' => $id]);
 
+// Remove the associated uploaded image file from the server (if any).
+deleteUploadedImage($food['image_url'] ?? null);
+
 jsonSuccess(['id' => $id, 'name' => $food['name']], 'Food deleted');
+

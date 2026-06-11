@@ -30,6 +30,8 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
+    public static final String EXTRA_SESSION_EXPIRED = "session_expired";
+
     private TextInputLayout tilEmail;
     private TextInputLayout tilPassword;
     private TextInputEditText etEmail;
@@ -80,6 +82,10 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> attemptLogin());
         tvRegisterLink.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
+
+        if (getIntent().getBooleanExtra(EXTRA_SESSION_EXPIRED, false)) {
+            Toast.makeText(this, R.string.session_expired, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void attemptLogin() {

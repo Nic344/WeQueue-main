@@ -11,13 +11,14 @@ requireMethod('GET');
 $pdo = getDb();
 
 $stmt = $pdo->query(
-    'SELECT id, name, description, price, image_url, category, created_at
+    'SELECT id, name, description, price, image_url, category, is_available, created_at
      FROM foods ORDER BY name ASC'
 );
 
 $foods = array_map(static function (array $row): array {
     $row['id'] = (int) $row['id'];
     $row['price'] = (float) $row['price'];
+    $row['is_available'] = (bool) $row['is_available'];
     return $row;
 }, $stmt->fetchAll());
 
