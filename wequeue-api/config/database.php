@@ -5,10 +5,10 @@ declare(strict_types=1);
 /**
  * PDO database connection — adjust credentials for your environment.
  */
-define('DB_HOST', getenv('DB_HOST') ?: 'pq7vi9.h.filess.io:61032');
-define('DB_NAME', getenv('DB_NAME') ?: 'mobiledb_possibleus');
-define('DB_USER', getenv('DB_USER') ?: 'mobiledb_possibleus');
-define('DB_PASS', getenv('DB_PASS') ?: 'cc31f5b40ea67e6e9dea000b4fe168f3cac9a59b');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'wequeue');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 /** App timezone offset (WIB = UTC+7). Keeps NOW()/CURRENT_TIMESTAMP and returned
