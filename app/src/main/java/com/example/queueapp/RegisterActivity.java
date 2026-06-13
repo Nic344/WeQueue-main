@@ -13,10 +13,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.queueapp.api.model.LoginResponse;
-import com.example.queueapp.auth.RoleNavigation;
-import com.example.queueapp.data.AppSession;
-import com.example.queueapp.data.SessionManager;
 import com.example.queueapp.viewmodel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,6 +27,7 @@ public class RegisterActivity extends AppCompatActivity {
     private MaterialButton btnRegister;
     private ProgressBar progressRegister;
     private AuthViewModel authViewModel;
+    private String registeredEmail = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +60,14 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
             setLoading(false);
-            if (resource.isSuccess() && resource.data != null && resource.data.getToken() != null) {
-                LoginResponse data = resource.data;
-                SessionManager.getInstance().saveSession(data.getToken(), data.getUser());
-                AppSession.getInstance().applyUser(data.getUser());
-                Toast.makeText(RegisterActivity.this, R.string.register_success, Toast.LENGTH_SHORT).show();
-                RoleNavigation.navigateToRoleHome(RegisterActivity.this);
+            if (resource.isSuccess()) {
+                // Do NOT auto-login. Send the user to Login to sign in manually.
+                Toast.makeText(RegisterActivity.this, R.string.register_success_login,
+                        Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                intent.putExtra(LoginActivity.EXTRA_PREFILL_EMAIL, registeredEmail);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
                 finish();
             } else {
                 String msg = resource.message != null ? resource.message : getString(R.string.register_failed);
@@ -105,6 +104,7 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
+            registeredEmail = email;
             authViewModel.register(name, email, password);
         });
     }

@@ -24,6 +24,7 @@ import com.google.android.material.textfield.TextInputLayout;
 public class LoginActivity extends AppCompatActivity {
 
     public static final String EXTRA_SESSION_EXPIRED = "session_expired";
+    public static final String EXTRA_PREFILL_EMAIL = "prefill_email";
 
     private TextInputLayout tilEmail;
     private TextInputLayout tilPassword;
@@ -83,6 +84,12 @@ public class LoginActivity extends AppCompatActivity {
 
         if (getIntent().getBooleanExtra(EXTRA_SESSION_EXPIRED, false)) {
             Toast.makeText(this, R.string.session_expired, Toast.LENGTH_LONG).show();
+        }
+
+        String prefillEmail = getIntent().getStringExtra(EXTRA_PREFILL_EMAIL);
+        if (prefillEmail != null && !prefillEmail.isEmpty()) {
+            etEmail.setText(prefillEmail);
+            etPassword.requestFocus();
         }
     }
 

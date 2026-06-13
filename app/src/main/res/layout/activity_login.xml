@@ -13,8 +13,8 @@
 
         <FrameLayout
             android:id="@+id/loginLogo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
             android:layout_marginTop="@dimen/spacing_xl"
             android:background="@drawable/bg_logo_circle"
             android:elevation="6dp"
@@ -23,11 +23,11 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_gravity="center"
                 android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_wequeue_logo" />
+                android:src="@drawable/ic_logo" />
         </FrameLayout>
 
         <TextView

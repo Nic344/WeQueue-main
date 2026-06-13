@@ -27,6 +27,7 @@
     <string name="password_mismatch">Passwords do not match</string>
     <string name="login_success">Welcome back, Devin!</string>
     <string name="register_success">Account created successfully!</string>
+    <string name="register_success_login">Account created. Please log in with your new account.</string>
 
     <string name="good_afternoon">Good Afternoon, %1$s</string>
     <string name="search_hint">What do you want to eat today?</string>
