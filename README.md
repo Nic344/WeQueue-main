@@ -123,8 +123,6 @@ WeQueue-main/
    user, password) sesuai konfigurasi Laragon/XAMPP Anda.
 4. Pastikan folder `wequeue-api/uploads/` dapat ditulis (writable) agar fitur upload gambar berfungsi.
 
-> Catatan: folder `wequeue-api/migrations/` hanya untuk database **lama** yang dibuat sebelum
-> kolom `is_available` ada. Untuk instalasi baru, abaikan saja.
 
 ### 2. Aplikasi Android
 1. Buka folder proyek di Android Studio, tunggu Gradle sync.
