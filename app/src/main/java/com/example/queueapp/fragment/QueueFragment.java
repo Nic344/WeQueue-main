@@ -33,10 +33,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
-/**
- * Customer Queue screen (MVVM). The Fragment observes {@link QueueViewModel}
- * LiveData and only renders state; networking lives in the repository.
- */
 public class QueueFragment extends Fragment {
 
     private QueueViewModel viewModel;

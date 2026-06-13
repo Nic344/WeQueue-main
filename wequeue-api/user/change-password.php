@@ -27,7 +27,6 @@ if ($newPassword === $currentPassword) {
     jsonError('New password must be different from the current one', 422);
 }
 
-// Fetch the stored hash (requireAuth does not expose the password column).
 $stmt = $pdo->prepare('SELECT password FROM users WHERE id = :id LIMIT 1');
 $stmt->execute(['id' => $userId]);
 $row = $stmt->fetch();
@@ -44,7 +43,6 @@ $update->execute([
     'id' => $userId,
 ]);
 
-// Security: invalidate other sessions but keep the current device signed in.
 $currentToken = getBearerToken();
 if ($currentToken !== null) {
     $revoke = $pdo->prepare('DELETE FROM tokens WHERE user_id = :id AND token != :token');

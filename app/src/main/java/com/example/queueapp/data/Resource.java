@@ -2,12 +2,6 @@ package com.example.queueapp.data;
 
 import androidx.annotation.Nullable;
 
-/**
- * A generic wrapper describing the state of data flowing from the repository
- * layer to the UI in the MVVM architecture: loading, success, or error.
- *
- * @param <T> the type of data being delivered to the observer.
- */
 public class Resource<T> {
 
     public enum Status {

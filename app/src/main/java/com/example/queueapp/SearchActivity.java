@@ -20,7 +20,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Collections;
 import java.util.List;
 
-/** Food Search screen (MVVM). */
 public class SearchActivity extends AppCompatActivity {
 
     public static final String EXTRA_QUERY = "extra_query";

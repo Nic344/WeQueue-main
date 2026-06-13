@@ -8,7 +8,6 @@ import com.example.queueapp.api.model.QueueHistoryListResponse;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.QueueRepository;
 
-/** ViewModel for the customer Queue History screen. */
 public class HistoryViewModel extends ViewModel {
 
     private final QueueRepository repository = new QueueRepository();

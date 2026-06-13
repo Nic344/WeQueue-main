@@ -125,7 +125,7 @@ public final class AppSession {
     }
 
     public void refreshFromBackendIfNeeded() {
-        // Queue/foods sync via Retrofit can be wired here in a follow-up.
+
     }
 
     public QueueTicket takeNewQueue() {

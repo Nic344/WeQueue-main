@@ -53,7 +53,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
                 new ActivityResultContracts.RequestPermission(),
                 granted -> {
                     if (!granted) {
-                        // User denied: turn the master switch back off and inform them.
+
                         prefs.setMasterEnabled(false);
                         switchMaster.setChecked(false);
                         Toast.makeText(this, R.string.notif_permission_denied, Toast.LENGTH_LONG).show();
@@ -116,7 +116,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         }
     }
 
-    /** Reflects current pref + permission state across the UI. */
     private void syncUi() {
         boolean master = prefs.isMasterEnabled();
         switchQueueCalled.setEnabled(master);

@@ -14,7 +14,6 @@ import com.google.gson.JsonObject;
 
 import okhttp3.MultipartBody;
 
-/** Repository for user/profile operations and admin user management. */
 public class UserRepository extends BaseRepository {
 
     public void getProfile(MutableLiveData<Resource<ProfileResponse>> target) {
@@ -36,8 +35,6 @@ public class UserRepository extends BaseRepository {
     public void uploadImage(MultipartBody.Part part, MutableLiveData<Resource<UploadResponse>> target) {
         enqueue(api.uploadImage(part), target, "Failed to upload image");
     }
-
-    // --- Admin user management ---
 
     public void getAllUsers(MutableLiveData<Resource<UserListResponse>> target) {
         enqueue(api.getAllUsers(), target, "Failed to load users");

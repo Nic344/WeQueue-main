@@ -6,7 +6,6 @@ import com.example.queueapp.api.model.FavoriteListResponse;
 import com.example.queueapp.api.model.FoodIdRequest;
 import com.example.queueapp.data.Resource;
 
-/** Repository for favorites: list, add, remove. */
 public class FavoriteRepository extends BaseRepository {
 
     public void getFavorites(MutableLiveData<Resource<FavoriteListResponse>> target) {

@@ -75,10 +75,6 @@ public class MainActivity extends RoleProtectedActivity {
 
     private static final int REQ_POST_NOTIFICATIONS = 2001;
 
-    /**
-     * Asks for the notification permission once on Android 13+ when the user
-     * still has notifications enabled (the default). Declining is non-blocking.
-     */
     private void maybeRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return;
@@ -94,10 +90,6 @@ public class MainActivity extends RoleProtectedActivity {
         }
     }
 
-    /**
-     * Equivalent to Scaffold(body: SafeArea(...), bottomNavigationBar: ...) — keeps fragment
-     * content above the system gesture bar and the bottom nav fully visible.
-     */
     private void applyMainWindowInsets() {
         View root = findViewById(R.id.mainRoot);
         ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {

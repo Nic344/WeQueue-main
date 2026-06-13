@@ -58,9 +58,6 @@ public class AdminMainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.adminBottomNav);
 
-        // The bottom nav is taller than ?attr/actionBarSize (it has labels), so match
-        // the fragment container's bottom padding to the real nav height. This keeps
-        // content — and the "+" FAB anchored to the bottom — fully above the nav bar.
         View fragmentContainer = findViewById(R.id.adminFragmentContainer);
         bottomNav.post(() -> fragmentContainer.setPadding(
                 fragmentContainer.getPaddingLeft(),
@@ -72,7 +69,7 @@ public class AdminMainActivity extends AppCompatActivity {
             int id = item.getItemId();
             Fragment selectedFragment = null;
             String title = "";
-            
+
             if (id == R.id.nav_dashboard) {
                 selectedFragment = new StaffDashboardFragment();
                 title = "Dashboard";
@@ -89,7 +86,7 @@ public class AdminMainActivity extends AppCompatActivity {
                 selectedFragment = new ProfileFragment();
                 title = "Profile";
             }
-            
+
             if (selectedFragment != null) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.adminFragmentContainer, selectedFragment)
@@ -102,7 +99,6 @@ public class AdminMainActivity extends AppCompatActivity {
             return false;
         });
 
-        // Load default tab
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_dashboard);
         }

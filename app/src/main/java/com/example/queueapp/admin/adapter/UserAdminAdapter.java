@@ -118,17 +118,16 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
         void bind(UserModel user) {
             tvUserName.setText(user.getName() != null ? user.getName() : "Unknown");
             tvUserEmail.setText(user.getEmail() != null ? user.getEmail() : "No Email");
-            
+
             String role = user.getRole() != null ? user.getRole() : "customer";
             tvUserRole.setText(role.toUpperCase());
-            
-            // Set role background color
+
             if ("admin".equalsIgnoreCase(role)) {
-                tvUserRole.setBackgroundColor(Color.parseColor("#F44336")); // Red
+                tvUserRole.setBackgroundColor(Color.parseColor("#F44336"));
             } else if ("staff".equalsIgnoreCase(role)) {
-                tvUserRole.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
+                tvUserRole.setBackgroundColor(Color.parseColor("#2196F3"));
             } else {
-                tvUserRole.setBackgroundColor(Color.parseColor("#9E9E9E")); // Grey
+                tvUserRole.setBackgroundColor(Color.parseColor("#9E9E9E"));
             }
 
             Glide.with(itemView.getContext())
@@ -144,12 +143,12 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.User
                 popup.getMenu().add("Make Customer");
                 popup.getMenu().add("Make Staff");
                 popup.getMenu().add("Make Admin");
-                
+
                 popup.setOnMenuItemClickListener(item -> {
                     String newRole = "customer";
                     if (item.getTitle().equals("Make Staff")) newRole = "staff";
                     else if (item.getTitle().equals("Make Admin")) newRole = "admin";
-                    
+
                     if (!newRole.equalsIgnoreCase(user.getRole()) && listener != null) {
                         listener.onChangeRoleClick(user, newRole);
                     }

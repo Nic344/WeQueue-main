@@ -24,7 +24,6 @@ import com.example.queueapp.viewmodel.AdminUsersViewModel;
 
 import java.util.List;
 
-/** Admin "Manage Users" screen (MVVM). */
 public class AdminUsersFragment extends Fragment implements UserAdminAdapter.OnUserAdminClickListener {
 
     private SwipeRefreshLayout swipeRefreshAdminUsers;

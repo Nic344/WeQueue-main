@@ -32,7 +32,7 @@ public final class ApiErrorHelper {
                     return error.getMessage();
                 }
             } catch (Exception ignored) {
-                // fall through
+
             }
         }
         return fallback;

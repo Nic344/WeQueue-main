@@ -13,7 +13,6 @@ import com.example.queueapp.data.repository.FavoriteRepository;
 import com.example.queueapp.data.repository.FoodRepository;
 import com.example.queueapp.data.repository.QueueRepository;
 
-/** ViewModel for the customer Home screen (status, my queue, favorites, popular). */
 public class HomeViewModel extends ViewModel {
 
     private final QueueRepository queueRepository = new QueueRepository();

@@ -13,11 +13,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public final class ApiConfig {
 
-    /**
-     * Emulator: 10.0.2.2 = localhost PC (jangan pakai 127.0.0.1 — itu device emulator sendiri).
-     * XAMPP: copy API ke htdocs/webabiq/ → http://localhost/webabiq/
-     * HP fisik: ganti dengan IP LAN PC, e.g. http://192.168.1.10/webabiq/
-     */
     public static final String BASE_URL = "http://10.0.2.2/webabiq/";
 
     private static ApiService apiService;

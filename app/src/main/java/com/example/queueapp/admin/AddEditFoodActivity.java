@@ -85,7 +85,7 @@ public class AddEditFoodActivity extends AppCompatActivity {
             isEditMode = true;
             foodId = getIntent().getIntExtra("food_id", -1);
             if (getSupportActionBar() != null) getSupportActionBar().setTitle("Edit Food");
-            
+
             etFoodName.setText(getIntent().getStringExtra("food_name"));
             etFoodDesc.setText(getIntent().getStringExtra("food_desc"));
             double existingPrice = getIntent().getDoubleExtra("food_price", 0);

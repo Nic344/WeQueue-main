@@ -46,8 +46,7 @@ public final class SessionManager {
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
         } catch (Exception e) {
-            // Encryption unavailable/corrupted on this device — fall back so the
-            // app still works (user just needs to log in again).
+
             Log.w(TAG, "Encrypted storage unavailable, falling back to plain prefs", e);
             prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         }

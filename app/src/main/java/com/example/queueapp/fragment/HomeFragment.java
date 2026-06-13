@@ -45,7 +45,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-/** Customer Home screen (MVVM). */
 public class HomeFragment extends Fragment {
 
     private HomeViewModel viewModel;
@@ -63,7 +62,6 @@ public class HomeFragment extends Fragment {
     private boolean coreContentLoaded;
     private String pendingErrorMessage;
 
-    // Tracks the optimistic favorite toggle so it can be reverted on failure.
     private int pendingToggleFoodId = -1;
     private boolean pendingTogglePrevState;
 
@@ -205,7 +203,7 @@ public class HomeFragment extends Fragment {
                 return;
             }
             if (resource.isError()) {
-                // Revert the optimistic change.
+
                 foodAdapter.setFavorite(pendingToggleFoodId, pendingTogglePrevState);
                 Snackbar.make(requireView(),
                         resource.message != null ? resource.message
@@ -245,7 +243,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void toggleFavorite(View anchor, FoodModel food, boolean currentlyFavorite) {
-        // Optimistic update; reverted by the observer if the request fails.
+
         pendingToggleFoodId = food.getId();
         pendingTogglePrevState = currentlyFavorite;
         foodAdapter.setFavorite(food.getId(), !currentlyFavorite);

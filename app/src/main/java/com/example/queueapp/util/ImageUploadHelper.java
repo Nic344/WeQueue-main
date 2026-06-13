@@ -14,10 +14,6 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
-/**
- * Converts a picked image {@link Uri} into a Retrofit multipart part so it can
- * be sent to the server via an ordinary Retrofit @Multipart call.
- */
 public final class ImageUploadHelper {
 
     private static final String DEFAULT_MIME = "image/jpeg";
@@ -25,10 +21,6 @@ public final class ImageUploadHelper {
     private ImageUploadHelper() {
     }
 
-    /**
-     * Reads the image at {@code uri} and wraps it as a {@code MultipartBody.Part}
-     * named "file" (matching the PHP endpoint's expected field).
-     */
     @NonNull
     public static MultipartBody.Part createImagePart(@NonNull Context context, @NonNull Uri uri)
             throws IOException {

@@ -37,7 +37,6 @@ import retrofit2.http.Query;
 
 public interface ApiService {
 
-    // Auth
     @POST("auth/register.php")
     Call<ApiResponse<LoginResponse>> register(@Body RegisterRequest request);
 
@@ -47,7 +46,6 @@ public interface ApiService {
     @POST("auth/logout.php")
     Call<ApiResponse<Object>> logout();
 
-    // Queue
     @GET("queue/status.php")
     Call<ApiResponse<QueueStatusResponse>> getQueueStatus();
 
@@ -63,7 +61,6 @@ public interface ApiService {
     @GET("queue/history.php")
     Call<ApiResponse<QueueHistoryListResponse>> getQueueHistory();
 
-    // Foods
     @GET("foods/popular.php")
     Call<ApiResponse<FoodListResponse>> getPopularFoods();
 
@@ -82,7 +79,6 @@ public interface ApiService {
     @HTTP(method = "DELETE", path = "foods/delete.php", hasBody = true)
     Call<ApiResponse<Object>> deleteFood(@Body FoodIdRequest request);
 
-    // Favorites
     @GET("favorites/list.php")
     Call<ApiResponse<FavoriteListResponse>> getFavorites();
 
@@ -92,7 +88,6 @@ public interface ApiService {
     @HTTP(method = "DELETE", path = "favorites/remove.php", hasBody = true)
     Call<ApiResponse<Object>> removeFavorite(@Body FoodIdRequest request);
 
-    // User
     @GET("user/profile.php")
     Call<ApiResponse<ProfileResponse>> getProfile();
 
@@ -102,12 +97,10 @@ public interface ApiService {
     @PUT("user/change-password.php")
     Call<ApiResponse<Object>> changePassword(@Body com.example.queueapp.api.model.ChangePasswordRequest request);
 
-    // Upload (multipart)
     @Multipart
     @POST("upload/image.php")
     Call<ApiResponse<UploadResponse>> uploadImage(@Part MultipartBody.Part file);
 
-    // Staff
     @GET("staff/dashboard.php")
     Call<ApiResponse<StaffDashboardResponse>> getStaffDashboard();
 
@@ -130,10 +123,9 @@ public interface ApiService {
             @Query("page") int page,
             @Query("limit") int limit);
 
-    // Admin
     @GET("admin/users.php")
     Call<ApiResponse<UserListResponse>> getAllUsers();
-    
+
     @PUT("admin/users/update-role.php")
     Call<ApiResponse<com.example.queueapp.api.model.UserModel>> updateUserRole(@Body JsonObject body);
 

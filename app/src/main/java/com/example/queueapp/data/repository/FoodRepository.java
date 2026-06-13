@@ -16,13 +16,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Repository for food data — the single source of truth between the Retrofit
- * API and the ViewModels. The UI never calls the API directly.
- */
 public class FoodRepository extends BaseRepository {
 
-    /** Loads all foods (admin) and pushes the list into {@code target}. */
     public void fetchFoods(MutableLiveData<Resource<List<FoodModel>>> target) {
         target.setValue(Resource.loading());
         api.getFoodList().enqueue(new Callback<ApiResponse<FoodListResponse>>() {
@@ -46,7 +41,6 @@ public class FoodRepository extends BaseRepository {
         });
     }
 
-    /** Creates or updates a food. */
     public void saveFood(FoodModel food, boolean isEdit, MutableLiveData<Resource<FoodModel>> target) {
         if (isEdit) {
             enqueue(api.updateFood(food), target, "Failed to save food");

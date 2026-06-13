@@ -16,11 +16,6 @@ import androidx.core.content.ContextCompat;
 import com.example.queueapp.MainActivity;
 import com.example.queueapp.R;
 
-/**
- * Builds and posts the app's system notifications. All public methods are
- * safe to call regardless of platform version or permission state; they
- * no-op when notifications are not permitted.
- */
 public final class NotificationHelper {
 
     public static final String CHANNEL_QUEUE = "queue_updates";
@@ -32,7 +27,6 @@ public final class NotificationHelper {
     private NotificationHelper() {
     }
 
-    /** Creates the notification channel. Safe to call multiple times. */
     public static void createChannels(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -101,7 +95,7 @@ public final class NotificationHelper {
         try {
             NotificationManagerCompat.from(context).notify(id, builder.build());
         } catch (SecurityException ignored) {
-            // Permission revoked between check and post; ignore.
+
         }
     }
 }

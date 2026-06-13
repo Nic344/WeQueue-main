@@ -28,7 +28,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Collections;
 
-/** Staff Dashboard screen (MVVM). */
 public class StaffDashboardFragment extends Fragment {
 
     private static final long AUTO_REFRESH_INTERVAL = 30_000L;

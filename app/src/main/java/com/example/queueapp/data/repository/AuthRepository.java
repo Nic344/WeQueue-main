@@ -7,7 +7,6 @@ import com.example.queueapp.api.model.LoginResponse;
 import com.example.queueapp.api.model.RegisterRequest;
 import com.example.queueapp.data.Resource;
 
-/** Repository for authentication: login, register, logout. */
 public class AuthRepository extends BaseRepository {
 
     public void login(String email, String password,

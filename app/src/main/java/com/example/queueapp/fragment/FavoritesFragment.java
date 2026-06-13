@@ -25,7 +25,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Collections;
 import java.util.List;
 
-/** Customer Favorites screen (MVVM). */
 public class FavoritesFragment extends Fragment {
 
     private FavoritesViewModel viewModel;

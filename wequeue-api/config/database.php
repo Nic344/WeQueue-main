@@ -2,20 +2,14 @@
 
 declare(strict_types=1);
 
-/**
- * PDO database connection — adjust credentials for your environment.
- */
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'wequeue');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
-/** App timezone offset (WIB = UTC+7). Keeps NOW()/CURRENT_TIMESTAMP and returned
- *  TIMESTAMP columns in local time so the app shows correct "x min ago" values. */
 define('DB_TIME_ZONE', getenv('DB_TIME_ZONE') ?: '+07:00');
 
-/** Minutes estimated per person in queue */
 define('ESTIMATED_WAIT_PER_PERSON', 3);
 
 function getDb(): PDO
@@ -34,7 +28,6 @@ function getDb(): PDO
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 
-    // Align the session timezone so timestamps are stored/returned in local time.
     $pdo->exec("SET time_zone = '" . DB_TIME_ZONE . "'");
 
     return $pdo;

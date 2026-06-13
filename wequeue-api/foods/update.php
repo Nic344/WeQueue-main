@@ -57,8 +57,6 @@ $stmt->execute([
     'is_available' => $isAvailable,
 ]);
 
-// If the image was replaced (or cleared), remove the previous uploaded file
-// so old images do not pile up on the server.
 $oldImage = $existing['image_url'] ?? null;
 $newImage = $imageUrl !== '' ? $imageUrl : null;
 if ($oldImage !== null && $oldImage !== $newImage) {

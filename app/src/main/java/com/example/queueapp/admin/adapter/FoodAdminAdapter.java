@@ -120,13 +120,13 @@ public class FoodAdminAdapter extends RecyclerView.Adapter<FoodAdminAdapter.Food
             tvFoodName.setText(food.getName());
             tvFoodCategory.setText(food.getCategory() != null ? food.getCategory() : "Uncategorized");
             tvFoodPrice.setText(currencyFormat.format(food.getPrice()));
-            
+
             if (food.isAvailable()) {
                 tvFoodAvailable.setText("Available");
-                tvFoodAvailable.setTextColor(Color.parseColor("#4CAF50")); // Green
+                tvFoodAvailable.setTextColor(Color.parseColor("#4CAF50"));
             } else {
                 tvFoodAvailable.setText("Out of Stock");
-                tvFoodAvailable.setTextColor(Color.parseColor("#F44336")); // Red
+                tvFoodAvailable.setTextColor(Color.parseColor("#F44336"));
             }
 
             Glide.with(itemView.getContext())

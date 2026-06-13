@@ -33,8 +33,6 @@ if (!$food) {
 $stmt = $pdo->prepare('DELETE FROM foods WHERE id = :id');
 $stmt->execute(['id' => $id]);
 
-// Remove the associated uploaded image file from the server (if any).
 deleteUploadedImage($food['image_url'] ?? null);
 
 jsonSuccess(['id' => $id, 'name' => $food['name']], 'Food deleted');
-

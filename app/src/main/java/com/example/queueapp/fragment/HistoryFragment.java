@@ -22,7 +22,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Collections;
 import java.util.List;
 
-/** Customer Queue History screen (MVVM). */
 public class HistoryFragment extends Fragment {
 
     private HistoryViewModel viewModel;

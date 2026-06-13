@@ -12,10 +12,6 @@ import com.example.queueapp.data.repository.UserRepository;
 
 import okhttp3.MultipartBody;
 
-/**
- * ViewModel for the Add/Edit Food screen — handles create, update, and image
- * upload through repositories, exposing results as observable LiveData.
- */
 public class AddEditFoodViewModel extends ViewModel {
 
     private final FoodRepository foodRepository = new FoodRepository();

@@ -23,11 +23,6 @@ import com.example.queueapp.api.model.FoodModel;
 import com.example.queueapp.viewmodel.AdminFoodsViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-/**
- * Manage Foods screen (MVVM). The Fragment only renders state and forwards user
- * intents to {@link AdminFoodsViewModel}; all data/API work lives in the
- * repository behind the ViewModel.
- */
 public class AdminFoodsFragment extends Fragment implements FoodAdminAdapter.OnFoodAdminClickListener {
 
     private SwipeRefreshLayout swipeRefreshAdminFoods;
@@ -112,7 +107,7 @@ public class AdminFoodsFragment extends Fragment implements FoodAdminAdapter.OnF
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh on return (e.g. after add/edit) so the list stays current.
+
         viewModel.refresh();
     }
 

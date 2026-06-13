@@ -16,16 +16,10 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * Detects expired/invalid sessions globally. When the backend rejects a request
- * with HTTP 401, the local session is cleared and the user is sent back to the
- * login screen, instead of being stuck on a screen with a failing "Retry".
- */
 public class SessionExpiryInterceptor implements Interceptor {
 
     private final Context appContext;
 
-    /** Prevents a burst of parallel 401s from launching login multiple times. */
     private static volatile boolean handlingExpiry = false;
 
     public SessionExpiryInterceptor(Context context) {
@@ -44,7 +38,6 @@ public class SessionExpiryInterceptor implements Interceptor {
         return response;
     }
 
-    /** Login/register also return 401 (wrong credentials); those are not expiry. */
     private boolean isAuthEndpoint(Request request) {
         String path = request.url().encodedPath();
         return path.contains("auth/login") || path.contains("auth/register");

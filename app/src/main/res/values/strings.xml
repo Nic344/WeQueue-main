@@ -3,10 +3,8 @@
     <string name="app_name">WeQueue</string>
     <string name="tagline">Queue Smarter, Save Time</string>
 
-    <!-- Splash -->
     <string name="splash_loading">Loading your experience…</string>
 
-    <!-- Auth -->
     <string name="welcome_back">Welcome back</string>
     <string name="sign_in_subtitle">Sign in to WeQueue and manage your queue</string>
     <string name="email">Email</string>
@@ -30,7 +28,6 @@
     <string name="login_success">Welcome back, Devin!</string>
     <string name="register_success">Account created successfully!</string>
 
-    <!-- Home -->
     <string name="good_afternoon">Good Afternoon, %1$s</string>
     <string name="search_hint">What do you want to eat today?</string>
     <string name="queue_status">Queue Status</string>
@@ -51,7 +48,6 @@
     <string name="queue_taken">Queue number %1$s secured!</string>
     <string name="search_tapped">Search: %1$s</string>
 
-    <!-- Queue -->
     <string name="your_ticket">Your Queue Ticket</string>
     <string name="queue_number">Queue Number</string>
     <string name="position">Position</string>
@@ -69,7 +65,6 @@
     <string name="yes_cancel">Yes, Cancel</string>
     <string name="position_format">#%1$d in line</string>
 
-    <!-- Recommendation -->
     <string name="food_recommendations">Food Recommendations</string>
     <string name="filter_budget">Budget</string>
     <string name="filter_category">Category</string>
@@ -83,18 +78,15 @@
     <string name="save">Save</string>
     <string name="load_failed">Could not load %1$s</string>
 
-    <!-- Favorites -->
     <string name="my_favorites">My Favorites</string>
     <string name="empty_favorites">No favorites yet</string>
     <string name="empty_favorites_desc">Tap the heart on foods you love to save them here.</string>
     <string name="browse_foods">Browse Foods</string>
 
-    <!-- History -->
     <string name="queue_history">Queue History</string>
     <string name="empty_history">No history yet</string>
     <string name="empty_history_desc">Your past queue visits will appear here.</string>
 
-    <!-- Profile -->
     <string name="profile">Profile</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="change_password">Change Password</string>
@@ -124,7 +116,6 @@
     <string name="profile_updated">Profile updated</string>
     <string name="notifications_message">Notification settings are UI preview only.</string>
 
-    <!-- Notifications -->
     <string name="notif_enable_all">Enable Notifications</string>
     <string name="notif_enable_all_desc">Turn all queue alerts on or off</string>
     <string name="notif_queue_called">Your turn is up</string>
@@ -144,14 +135,12 @@
     <string name="notif_test_title">Notifications are working</string>
     <string name="notif_test_body">This is a test alert from WeQueue.</string>
 
-    <!-- Nav -->
     <string name="nav_home">Home</string>
     <string name="nav_queue">Queue</string>
     <string name="nav_favorites">Favorites</string>
     <string name="nav_history">History</string>
     <string name="nav_profile">Profile</string>
 
-    <!-- Status -->
     <string name="status_completed">Completed</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_serving">Serving</string>
@@ -164,7 +153,6 @@
     <string name="network_error">Network error: %1$s</string>
     <string name="session_expired">Your session has expired. Please log in again.</string>
 
-    <!-- Staff -->
     <string name="staff_dashboard">Dashboard</string>
     <string name="staff_queue">Queue</string>
     <string name="staff_profile">Profile</string>
@@ -193,7 +181,6 @@
     <string name="status_priority">Priority</string>
     <string name="staff_logout">Staff Logout</string>
 
-    <!-- Admin -->
     <string name="admin_profile">Profile</string>
     <string name="admin_change_role">Change role</string>
     <string name="admin_delete_user">Delete User</string>

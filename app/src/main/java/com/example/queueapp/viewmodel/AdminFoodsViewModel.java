@@ -10,11 +10,6 @@ import com.example.queueapp.data.repository.FoodRepository;
 
 import java.util.List;
 
-/**
- * ViewModel for the admin "Manage Foods" screen. Survives configuration changes
- * and exposes immutable LiveData the Fragment observes — keeping API/data logic
- * out of the UI (MVVM).
- */
 public class AdminFoodsViewModel extends ViewModel {
 
     private final FoodRepository repository = new FoodRepository();
@@ -30,7 +25,6 @@ public class AdminFoodsViewModel extends ViewModel {
         return deleteResult;
     }
 
-    /** Loads foods once if not already loaded (e.g. first display). */
     public void loadFoodsIfNeeded() {
         if (foods.getValue() == null) {
             refresh();

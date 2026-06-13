@@ -27,7 +27,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Staff Queue Monitor screen (MVVM). */
 public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.OnQueueActionListener {
 
     private StaffQueueViewModel viewModel;
@@ -189,8 +188,6 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
         rvQueueList.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 
-    // --- Action callbacks ---
-
     @Override
     public void onSkip(StaffQueueItem item) {
         viewModel.skip(item.getId());
@@ -218,6 +215,6 @@ public class StaffQueueFragment extends Fragment implements StaffQueueAdapter.On
 
     @Override
     public void onItemClick(StaffQueueItem item) {
-        // Optional: open detail bottom sheet
+
     }
 }

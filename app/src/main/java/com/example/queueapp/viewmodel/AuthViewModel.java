@@ -8,7 +8,6 @@ import com.example.queueapp.api.model.LoginResponse;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.AuthRepository;
 
-/** ViewModel for authentication (login, register, logout). */
 public class AuthViewModel extends ViewModel {
 
     private final AuthRepository repository = new AuthRepository();

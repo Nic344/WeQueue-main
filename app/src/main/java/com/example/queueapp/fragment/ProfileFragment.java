@@ -42,7 +42,6 @@ import java.io.IOException;
 
 import okhttp3.MultipartBody;
 
-/** Profile screen (MVVM): observes {@link ProfileViewModel} for all data work. */
 public class ProfileFragment extends Fragment {
 
     private ProfileViewModel viewModel;
@@ -190,7 +189,7 @@ public class ProfileFragment extends Fragment {
                 return;
             }
             if (resource.isSuccess() && resource.data != null && resource.data.getUrl() != null) {
-                // Persist the uploaded image URL onto the profile.
+
                 String name = currentUser != null ? currentUser.getName() : AppSession.getInstance().getUserName();
                 String email = currentUser != null ? currentUser.getEmail() : AppSession.getInstance().getUserEmail();
                 viewModel.updateProfile(name, email, resource.data.getUrl());

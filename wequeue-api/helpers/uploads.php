@@ -3,11 +3,7 @@
 declare(strict_types=1);
 
 if (!function_exists('deleteUploadedImage')) {
-    /**
-     * Deletes a locally uploaded image file referenced by $imageUrl. Only files
-     * inside this API's /uploads directory are touched; external URLs are ignored.
-     * Path traversal is prevented via basename() + realpath() containment check.
-     */
+
     function deleteUploadedImage(?string $imageUrl): void
     {
         if ($imageUrl === null || trim($imageUrl) === '') {

@@ -9,7 +9,6 @@ import com.example.queueapp.data.Resource;
 
 import com.google.gson.JsonObject;
 
-/** Repository for staff operations: dashboard + queue management. */
 public class StaffRepository extends BaseRepository {
 
     public void getDashboard(MutableLiveData<Resource<StaffDashboardResponse>> target) {
@@ -20,7 +19,6 @@ public class StaffRepository extends BaseRepository {
         enqueue(api.callNext(), target, "Failed to call next");
     }
 
-    /** Completes the currently serving queue (no specific id). */
     public void completeServing(MutableLiveData<Resource<StaffQueueItem>> target) {
         enqueue(api.completeQueue(new JsonObject()), target, "No serving queue found");
     }

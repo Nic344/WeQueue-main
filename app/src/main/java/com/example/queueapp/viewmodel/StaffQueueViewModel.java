@@ -9,7 +9,6 @@ import com.example.queueapp.api.model.StaffQueueItem;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.StaffRepository;
 
-/** ViewModel for the staff Queue Monitor screen. */
 public class StaffQueueViewModel extends ViewModel {
 
     private final StaffRepository repository = new StaffRepository();

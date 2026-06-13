@@ -16,10 +16,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/** Repository for queue operations (status, my queue, take, cancel, history). */
 public class QueueRepository extends BaseRepository {
 
-    /** "My queue" returns success even with a null queue (no active queue). */
     public void fetchMyQueue(MutableLiveData<Resource<MyQueueResponse>> target) {
         target.setValue(Resource.loading());
         api.getMyQueue().enqueue(new Callback<ApiResponse<MyQueueResponse>>() {

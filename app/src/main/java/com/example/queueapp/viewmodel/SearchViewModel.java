@@ -8,7 +8,6 @@ import com.example.queueapp.api.model.FoodListResponse;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.FoodRepository;
 
-/** ViewModel for the food Search screen. */
 public class SearchViewModel extends ViewModel {
 
     private final FoodRepository repository = new FoodRepository();

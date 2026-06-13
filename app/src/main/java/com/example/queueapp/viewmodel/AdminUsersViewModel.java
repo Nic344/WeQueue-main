@@ -9,7 +9,6 @@ import com.example.queueapp.api.model.UserModel;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.UserRepository;
 
-/** ViewModel for the admin "Manage Users" screen. */
 public class AdminUsersViewModel extends ViewModel {
 
     private final UserRepository repository = new UserRepository();

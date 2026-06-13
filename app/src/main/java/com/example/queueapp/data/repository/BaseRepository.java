@@ -13,11 +13,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Base class for repositories. Provides a single helper that enqueues a
- * Retrofit call and maps the result into a {@link Resource} delivered through
- * the given {@link MutableLiveData} target — keeping all repositories DRY.
- */
 public abstract class BaseRepository {
 
     protected final ApiService api = ApiConfig.getApiService();

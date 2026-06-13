@@ -9,10 +9,6 @@ import com.example.queueapp.api.model.QueueModel;
 import com.example.queueapp.data.Resource;
 import com.example.queueapp.data.repository.QueueRepository;
 
-/**
- * ViewModel for the customer Queue screen. Holds queue state across config
- * changes and exposes load/take/cancel as observable LiveData (MVVM).
- */
 public class QueueViewModel extends ViewModel {
 
     private final QueueRepository repository = new QueueRepository();

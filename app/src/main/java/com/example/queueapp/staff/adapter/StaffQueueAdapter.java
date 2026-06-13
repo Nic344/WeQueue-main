@@ -200,8 +200,7 @@ public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.Vi
 
         private String formatTime(String createdAt) {
             if (createdAt == null || createdAt.isEmpty()) return "";
-            // The backend returns timestamps in WIB (UTC+7); parse them in that
-            // zone explicitly so elapsed time is correct regardless of device locale.
+
             TimeZone serverZone = TimeZone.getTimeZone("GMT+7");
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
@@ -220,7 +219,7 @@ public class StaffQueueAdapter extends RecyclerView.Adapter<StaffQueueAdapter.Vi
                 }
             } catch (ParseException ignored) {
             }
-            // Fallback: show time portion in local time
+
             try {
                 SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
                 in.setTimeZone(serverZone);

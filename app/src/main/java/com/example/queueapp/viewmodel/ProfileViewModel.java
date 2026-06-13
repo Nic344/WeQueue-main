@@ -12,7 +12,6 @@ import com.example.queueapp.data.repository.UserRepository;
 
 import okhttp3.MultipartBody;
 
-/** ViewModel for the Profile screen (load/update/change password/upload/logout). */
 public class ProfileViewModel extends ViewModel {
 
     private final UserRepository userRepository = new UserRepository();

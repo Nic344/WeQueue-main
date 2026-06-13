@@ -8,11 +8,6 @@ import androidx.annotation.Nullable;
 
 import com.example.queueapp.api.model.QueueModel;
 
-/**
- * Decides when to fire queue notifications by comparing the latest queue state
- * against the last state we already notified about. State is persisted so the
- * same alert is not raised twice (e.g. across repeated polls or app restarts).
- */
 public final class QueueNotifier {
 
     private static final String PREFS_NAME = "wequeue_queue_state";
@@ -20,23 +15,18 @@ public final class QueueNotifier {
     private static final String KEY_NOTIFIED_CALLED = "notified_called";
     private static final String KEY_NOTIFIED_ALMOST = "notified_almost";
 
-    /** Notify "almost your turn" once position is at or below this. */
     private static final int ALMOST_THRESHOLD = 3;
 
     private QueueNotifier() {
     }
 
-    /**
-     * Evaluates the given queue (may be null when the user has no active queue)
-     * and posts notifications for any newly reached milestone.
-     */
     public static void evaluate(Context context, @Nullable QueueModel queue) {
         Context app = context.getApplicationContext();
         SharedPreferences prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         NotificationPreferences notifPrefs = NotificationPreferences.getInstance(app);
 
         if (queue == null) {
-            // No active queue: clear tracking so a future queue starts fresh.
+
             prefs.edit().clear().apply();
             return;
         }
@@ -44,7 +34,7 @@ public final class QueueNotifier {
         int queueId = queue.getId();
         int trackedId = prefs.getInt(KEY_QUEUE_ID, -1);
         if (queueId != trackedId) {
-            // New queue ticket: reset milestone tracking.
+
             prefs.edit()
                     .putInt(KEY_QUEUE_ID, queueId)
                     .putBoolean(KEY_NOTIFIED_CALLED, false)
