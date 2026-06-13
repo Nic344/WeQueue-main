@@ -118,8 +118,7 @@ WeQueue-main/
 1. Salin folder `wequeue-api/` ke document root web server sehingga dapat diakses di
    `http://localhost/webabiq/` (Laragon: `C:\laragon\www\webabiq\`). Sesuaikan dengan `BASE_URL`.
 2. Import `wequeue-api/database.sql` via HeidiSQL/phpMyAdmin. Skrip ini otomatis membuat
-   database `wequeue` beserta semua tabel + data contoh (kolom `is_available` sudah termasuk —
-   tidak perlu migrasi manual untuk instalasi baru).
+   database `wequeue` beserta semua tabel + data contoh.
 3. Sesuaikan kredensial DB di `wequeue-api/config/database.php` (host, nama database `wequeue`,
    user, password) sesuai konfigurasi Laragon/XAMPP Anda.
 4. Pastikan folder `wequeue-api/uploads/` dapat ditulis (writable) agar fitur upload gambar berfungsi.
