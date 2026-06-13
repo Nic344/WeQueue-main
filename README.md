@@ -116,13 +116,16 @@ WeQueue-main/
 
 ### 1. Backend (Laragon / XAMPP)
 1. Salin folder `wequeue-api/` ke document root web server sehingga dapat diakses di
-   `http://localhost/webabiq/` (sesuaikan dengan `BASE_URL`).
-2. Import skema database (file `wequeue-api/database.sql`) via HeidiSQL/phpMyAdmin.
-3. Jika DB lama (sebelum kolom availability ada), jalankan migrasi:
-   ```sql
-   ALTER TABLE foods ADD COLUMN is_available TINYINT(1) NOT NULL DEFAULT 1 AFTER category;
-   ```
-4. Sesuaikan kredensial DB di `wequeue-api/config/database.php` bila perlu.
+   `http://localhost/webabiq/` (Laragon: `C:\laragon\www\webabiq\`). Sesuaikan dengan `BASE_URL`.
+2. Import `wequeue-api/database.sql` via HeidiSQL/phpMyAdmin. Skrip ini otomatis membuat
+   database `wequeue` beserta semua tabel + data contoh (kolom `is_available` sudah termasuk —
+   tidak perlu migrasi manual untuk instalasi baru).
+3. Sesuaikan kredensial DB di `wequeue-api/config/database.php` (host, nama database `wequeue`,
+   user, password) sesuai konfigurasi Laragon/XAMPP Anda.
+4. Pastikan folder `wequeue-api/uploads/` dapat ditulis (writable) agar fitur upload gambar berfungsi.
+
+> Catatan: folder `wequeue-api/migrations/` hanya untuk database **lama** yang dibuat sebelum
+> kolom `is_available` ada. Untuk instalasi baru, abaikan saja.
 
 ### 2. Aplikasi Android
 1. Buka folder proyek di Android Studio, tunggu Gradle sync.
@@ -177,11 +180,3 @@ Semua endpoint terproteksi memerlukan header `Authorization: Bearer <token>`.
 - Auto-logout otomatis saat token ditolak server (HTTP 401).
 - Upload file divalidasi tipe & ukuran di server; ganti password mencabut sesi lain.
 
----
-
-## 🎯 Pemetaan ke CPMK (Rubrik Penilaian)
-- **CPMK-1 (Arsitektur):** pola MVVM (View → ViewModel → Repository → API), lifecycle-aware, Intent eksplisit.
-- **CPMK-2 (UI/UX):** ConstraintLayout, RecyclerView + ViewHolder, BottomNavigation, Material Design, dark mode.
-- **CPMK-3 (Data & API):** Retrofit GET/POST/PUT/DELETE, CRUD MySQL, GSON, session terenkripsi, error handling 401/timeout.
-- **CPMK-4 (Testing & Performa):** operasi jaringan asinkron (tidak blok main thread), penanganan error + retry, minim force close.
-- **CPMK-5 (Dokumentasi):** source code di GitHub, README ini, APK, dan video presentasi.
