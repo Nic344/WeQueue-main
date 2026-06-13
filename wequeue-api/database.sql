@@ -109,3 +109,8 @@ INSERT INTO favorites (user_id, food_id) VALUES
 (1, 1),
 (1, 3),
 (1, 4);
+
+
+
+
+ALTER TABLE foods ADD COLUMN is_available TINYINT(1) NOT NULL DEFAULT 1 AFTER category;
